@@ -18,6 +18,132 @@
         .tree-item.is-selected .usa-icon { color: white; }
         .preview-mode-badge { position: absolute; top: 10px; right: 20px; z-index: 100; opacity: 0.7; }
         .hidden-file-input { display: none; }
+        
+        /* Mobile Responsive Styles */
+        @media screen and (max-width: 1024px) {
+            .workspace-container {
+                flex-direction: column;
+                height: auto;
+                overflow: visible;
+            }
+            
+            .panel-sidebar,
+            .panel-inspector {
+                width: 100%;
+                border-right: none;
+                border-left: none;
+                border-bottom: 1px solid #adcded;
+                max-height: none;
+            }
+            
+            .panel-canvas {
+                padding: 1rem;
+                width: 100%;
+            }
+            
+            .preview-mode-badge {
+                position: static;
+                display: block;
+                margin-bottom: 1rem;
+                opacity: 1;
+            }
+        }
+        
+        @media screen and (max-width: 768px) {
+            body, html {
+                overflow: auto;
+            }
+            
+            .workspace-container {
+                height: auto;
+            }
+            
+            header .grid-container {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 1rem;
+            }
+            
+            header .display-flex.gap-1 {
+                width: 100%;
+                flex-wrap: wrap;
+                gap: 0.5rem !important;
+            }
+            
+            header .usa-button {
+                font-size: 0.875rem;
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .panel-canvas {
+                padding: 0.75rem;
+            }
+            
+            .usa-banner__inner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .usa-banner__header-text {
+                font-size: 0.875rem;
+            }
+            
+            footer .grid-container {
+                flex-direction: column !important;
+                gap: 0.5rem;
+                text-align: center;
+            }
+        }
+        
+        @media screen and (max-width: 480px) {
+            .panel-sidebar,
+            .panel-inspector {
+                padding: 1rem !important;
+            }
+            
+            .panel-canvas {
+                padding: 0.5rem;
+            }
+            
+            #uswds-rendering-canvas {
+                padding: 1.5rem !important;
+            }
+            
+            .usa-button {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            header .display-flex.gap-1 {
+                flex-direction: column;
+            }
+            
+            header .usa-button {
+                width: 100%;
+            }
+            
+            .usa-form-group {
+                margin-bottom: 1rem;
+            }
+            
+            .usa-input,
+            .usa-select,
+            .usa-textarea {
+                font-size: 16px;
+            }
+            
+            h1.usa-heading {
+                font-size: 1.5rem !important;
+            }
+            
+            h2 {
+                font-size: 1.25rem;
+            }
+            
+            h3 {
+                font-size: 1.1rem;
+            }
+        }
     </style>
 </head>
 <body>
