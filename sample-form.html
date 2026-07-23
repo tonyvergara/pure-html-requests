@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USWDS Form Schema Builder & Prototype Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uswds/3.13.0/css/uswds.min.css">
+    <style>
+        /* Contextual adjustments for the workspace application layout */
+        body, html { height: 100%; margin: 0; overflow: hidden; }
+        .workspace-container { display: flex; height: calc(100vh - 120px); overflow: hidden; }
+        .panel-sidebar { width: 320px; background-color: #f0f4f9; border-right: 1px solid #adcded; overflow-y: auto; }
+        .panel-canvas { flex: 1; background-color: #ffffff; overflow-y: auto; padding: 2rem; position: relative; }
+        .panel-inspector { width: 360px; background-color: #f0f4f9; border-left: 1px solid #adcded; overflow-y: auto; }
+        .tree-item { cursor: pointer; transition: background 0.1s ease; }
+        .tree-item:hover { background-color: #dfeefc; }
+        .tree-item.is-selected { background-color: #005ea2; color: white; }
+        .tree-item.is-selected .usa-icon { color: white; }
+        .preview-mode-badge { position: absolute; top: 10px; right: 20px; z-index: 100; opacity: 0.7; }
+        .hidden-file-input { display: none; }
+    </style>
+</head>
+<body>
+
+    <section class="usa-banner" aria-label="Official website of the United States government">
+        <div class="usa-banner__header">
+            <div class="usa-banner__inner">
+                <div class="grid-col-auto">
+                    <img class="usa-banner__header-flag" src="https://cdnjs.cloudflare.com/ajax/libs/uswds/3.13.0/img/usflag.png" alt="U.S. flag">
+                </div>
+                <div class="grid-col-fill tablet:grid-col-auto">
+                    <p class="usa-banner__header-text">An official website of the United States government</p>
+                    <p class="usa-banner__header-action" aria-hidden="true">Here’s how you know</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <header class="usa-header usa-header--basic bg-neutral-dark text-white padding-y-2">
+        <div class="grid-container maxw-widescreen display-flex flex-justify flex-align-center">
+            <div>
+                <em class="usa-logo__text font-sans-lg text-bold text-white margin-0">USWDS Form Prototype Engine</em>
+                <p class="text-neutral-light font-sans-3xs margin-0">JSON-Driven Dynamic UX Architecture Sandbox</p>
+            </div>
+            <div class="display-flex gap-1">
+                <button class="usa-button usa-button--accent-cool" onclick="triggerJsonImport()">
+                    Upload JSON
+                </button>
+                <input type="file" id="jsonFileInput" class="hidden-file-input" accept=".json" onchange="handleJsonImport(event)">
+                <button class="usa-button usa-button--outline usa-button--inverse" onclick="exportSchemaJson()">
+                    Download JSON
+                </button>
+                <button id="errorToggleBtn" class="usa-button usa-button--secondary" onclick="toggleGlobalErrors()">
+                    Errors: OFF
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="workspace-container">
+        
+        <aside class="panel-sidebar padding-2">
+            <h2 class="font-sans-xs text-bold text-uppercase tracking-1 margin-bottom-2 text-primary-darker">Form Architecture</h2>
+            
+            <div class="margin-bottom-3">
+                <label class="usa-label font-sans-3xs margin-top-0" for="app-form-title">Form Project Title</label>
+                <input class="usa-input usa-input--small" id="app-form-title" type="text" oninput="updateFormTitle(this.value)">
+            </div>
+
+            <div class="display-flex flex-justify flex-align-center margin-bottom-1">
+                <span class="font-sans-3xs text-bold text-neutral">PAGES & SEQUENCING</span>
+            </div>
+            
+            <ul class="usa-list usa-list--unstyled margin-bottom-3" id="pages-list-tree">
+                </ul>
+
+            <div id="fields-tree-section" style="display:none;">
+                <div class="display-flex flex-justify flex-align-center margin-bottom-1 margin-top-2">
+                    <span class="font-sans-3xs text-bold text-neutral">FIELDS ON CURRENT PAGE</span>
+                </div>
+                <ul class="usa-list usa-list--unstyled margin-bottom-2" id="fields-list-tree">
+                    </ul>
+                <div class="margin-top-1">
+                    <label class="usa-label font-sans-3xs" for="add-field-select">Add Component Field</label>
+                    <select class="usa-select usa-select--small margin-top-05" id="add-field-select" onchange="addNewField(this.value)">
+                        <option value="">- Select Component Types -</option>
+                        <option value="text">Text Input</option>
+                        <option value="textarea">Text Area</option>
+                        <option value="radio">Radio Buttons</option>
+                        <option value="checkbox">Checkboxes</option>
+                        <option value="dropdown">Dropdown Select</option>
+                        <option value="date">Date Picker</option>
+                        <option value="file">File Upload</option>
+                    </select>
+                </div>
+            </div>
+        </aside>
+
+        <section class="panel-canvas bg-neutral-lightest">
+            <span class="usa-badge bg-neutral-medium preview-mode-badge" id="canvas-badge">LIVE COMPONENT PREVIEW</span>
+            
+            <div class="grid-container maxw-tablet bg-white padding-4 radius-md shadow-2" id="uswds-rendering-canvas">
+                </div>
+        </section>
+
+        <aside class="panel-inspector padding-2" id="inspector-panel-view">
+            <div id="inspector-empty-state" class="text-center padding-top-4">
+                <p class="text-italic text-neutral">Select a step or component field from the layout hierarchy to inspect and modify its validation and layout tokens.</p>
+            </div>
+            <div id="inspector-content-form" style="display:none;">
+                </div>
+        </aside>
+
+    </main>
+
+    <footer class="usa-footer usa-footer--slim bg-neutral-dark text-white padding-y-2">
+        <div class="grid-container maxw-widescreen font-sans-3xs text-neutral-light display-flex flex-justify">
+            <div>Engine Target Compliance: USWDS v3.13.0 Standards</div>
+            <div>Strict Utility-First Scoping Profile — Semantic Structure Matrix</div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uswds/3.13.0/js/uswds.min.js"></script>
+
+    <script>
+        // Default Seed Data Architecture demonstrating standard system patterns
+        let formSchema = {
+            formTitle: "Application for Federal Benefits Assistance",
+            steps: [
+                {
+                    id: "intro_step",
+                    title: "Before You Begin",
+                    type: "intro",
+                    description: "This structural runtime prototype guides applicants through processing requirements under Title 44 provisions. Ensure document prerequisites are met.",
+                    buttonText: "Get Started"
+                },
+                {
+                    id: "personal_info_step",
+                    title: "Personal Information",
+                    type: "question",
+                    fields: [
+                        { id: "f_name", type: "text", label: "Full Legal Name", hintText: "Provide full legal naming conventions as registered on official credentials.", required: true, errorMessage: "Legal name verification entry is required.", placeholder: "Jane Doe" },
+                        { id: "biography", type: "textarea", label: "Professional Statement & Justification", hintText: "Provide background information details.", required: false, errorMessage: "Required syntax threshold not fulfilled.", placeholder: "Enter historical brief..." },
+                        { id: "citizenship", type: "radio", label: "Citizen Status Profile", hintText: "Select valid profile alignment status.", required: true, errorMessage: "Status validation verification must be marked.", options: ["U.S. Native Citizen", "Naturalized Citizen", "Permanent Resident Card Holder"] }
+                    ]
+                },
+                {
+                    id: "logistics_step",
+                    title: "Program Logistics & Scheduling",
+                    type: "question",
+                    fields: [
+                        { id: "service_branch", type: "dropdown", label: "Affiliated Agency Domain", hintText: "Identify primary processing oversight framework.", required: true, errorMessage: "Selection must map to an operating platform.", options: ["Department of Agriculture", "Department of Commerce", "Department of Energy", "Social Security Administration"] },
+                        { id: "effective_date", type: "date", label: "Target Effective Coverage Date", hintText: "Requested initial deployment schedule timeline tracking date.", required: true, errorMessage: "Provide a valid systemic calendar designation." },
+                        { id: "authorization_file", type: "file", label: "Upload Eligibility Verification Manifest", hintText: "Acceptable format parameters restricted to certified PDF variants.", required: false, errorMessage: "File integrity parsing failure." },
+                        { id: "ack_box", type: "checkbox", label: "Legal Acknowledgment Checklist", hintText: "User assumes legal accountability criteria.", required: true, errorMessage: "Affirmation checkbox validation is mandatory.", options: ["I certify structural data validity rules.", "I consent to remote system logging protocols."] }
+                    ]
+                },
+                {
+                    id: "review_step",
+                    title: "Review Application Specifications",
+                    type: "review",
+                    description: "Verify configuration choices compiled by active data mapping before publishing structural state vectors."
+                },
+                {
+                    id: "success_step",
+                    title: "Transaction Request Finalized",
+                    type: "success",
+                    description: "Your operational layout payload has passed verification gateways. Track structural execution sequence receipt ID: #USWDS-8472-9922X.",
+                    calloutText: "Processing window takes up to 3 business cycles. Confirmation alerts have been broadcasted to registered profile nodes."
+                }
+            ]
+        };
+
+        let currentStepIndex = 0;
+        let selectedEntity = { type: 'step', id: 'intro_step' }; // Tracking selections for Inspector tracking
+        let forceGlobalErrors = false;
+
+        // Life Cycle Initialization Engine Hooks
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('app-form-title').value = formSchema.formTitle;
+            renderWorkspaceState();
+        });
+
+        function toggleGlobalErrors() {
+            forceGlobalErrors = !forceGlobalErrors;
+            const btn = document.getElementById('errorToggleBtn');
+            if(forceGlobalErrors) {
+                btn.classList.remove('usa-button--secondary');
+                btn.classList.add('usa-button--error');
+                btn.innerText = "Errors: FORCE ON";
+                document.getElementById('canvas-badge').innerText = "VISUAL ERROR ERROR MATRIX ACTIVATED";
+                document.getElementById('canvas-badge').className = "usa-badge bg-error preview-mode-badge";
+            } else {
+                btn.classList.remove('usa-button--error');
+                btn.classList.add('usa-button--secondary');
+                btn.innerText = "Errors: OFF";
+                document.getElementById('canvas-badge').innerText = "LIVE COMPONENT PREVIEW";
+                document.getElementById('canvas-badge').className = "usa-badge bg-neutral-medium preview-mode-badge";
+            }
+            renderCanvas();
+        }
+
+        function updateFormTitle(val) {
+            formSchema.formTitle = val;
+            renderCanvas();
+        }
+
+        function navigateToStep(idx) {
+            currentStepIndex = idx;
+            selectedEntity = { type: 'step', id: formSchema.steps[idx].id };
+            renderWorkspaceState();
+        }
+
+        function selectFieldEntity(fieldId) {
+            selectedEntity = { type: 'field', id: fieldId };
+            renderWorkspaceState();
+        }
+
+        function renderWorkspaceState() {
+            renderTreePanels();
+            renderCanvas();
+            renderInspector();
+            
+            // Re-bind native USWDS visual interactions explicitly if DOM elements are re-written dynamically
+            if(window.USWDS && typeof window.USWDS.refetch === 'function') {
+                window.USWDS.refetch();
+            }
+        }
+
+        // Render Structure Trees
+        function renderTreePanels() {
+            const pagesTree = document.getElementById('pages-list-tree');
+            pagesTree.innerHTML = '';
+            
+            formSchema.steps.forEach((step, idx) => {
+                const isSelected = (selectedEntity.type === 'step' && selectedEntity.id === step.id);
+                const li = document.createElement('li');
+                li.className = `tree-item padding-1 radius-sm margin-y-05 font-sans-2xs display-flex flex-align-center ${isSelected ? 'is-selected' : 'text-neutral-dark'}`;
+                li.onclick = (e) => { e.stopPropagation(); navigateToStep(idx); };
+                
+                let iconChar = "📄";
+                if(step.type === 'intro') iconChar = "🏁";
+                if(step.type === 'review') iconChar = "👁️";
+                if(step.type === 'success') iconChar = "✅";
+                
+                li.innerHTML = `<span class="margin-right-1">${iconChar}</span> <span class="text-semibold">${step.title}</span>`;
+                pagesTree.appendChild(li);
+            });
+
+            const currentStep = formSchema.steps[currentStepIndex];
+            const fieldsTreeSection = document.getElementById('fields-tree-section');
+            const fieldsTree = document.getElementById('fields-list-tree');
+            fieldsTree.innerHTML = '';
+
+            if (currentStep.type === 'question') {
+                fieldsTreeSection.style.display = 'block';
+                currentStep.fields.forEach(f => {
+                    const isSelected = (selectedEntity.type === 'field' && selectedEntity.id === f.id);
+                    const li = document.createElement('li');
+                    li.className = `tree-item padding-1 radius-sm margin-y-05 font-sans-3xs display-flex flex-align-center ${isSelected ? 'is-selected' : 'text-neutral-dark'}`;
+                    li.onclick = (e) => { e.stopPropagation(); selectFieldEntity(f.id); };
+                    li.innerHTML = `<span class="margin-right-1 text-neutral-medium">⚙️</span> <div class="text-truncate"><strong>${f.id}</strong> <span class="text-italic">(${f.type})</span></div>`;
+                    fieldsTree.appendChild(li);
+                });
+            } else {
+                fieldsTreeSection.style.display = 'none';
+            }
+        }
+
+        // Render Live Preview UI Frame
+        function renderCanvas() {
+            const canvas = document.getElementById('uswds-rendering-canvas');
+            canvas.innerHTML = '';
+
+            const step = formSchema.steps[currentStepIndex];
+
+            // Render Title Context Context Block
+            const formHeaderHTML = `
+                <div class="border-bottom-1px border-neutral-light padding-bottom-2 margin-bottom-3">
+                    <span class="text-primary text-bold font-sans-2xs text-uppercase tracking-2">${formSchema.formTitle}</span>
+                    <h1 class="usa-heading font-sans-xl margin-top-1 margin-bottom-0">${step.title}</h1>
+                </div>
+            `;
+            canvas.insertAdjacentHTML('beforeend', formHeaderHTML);
+
+            // Add Master Top Alert Error Banner if state is forced
+            if(forceGlobalErrors && step.type === 'question') {
+                const errorBannerHTML = `
+                    <div class="usa-alert usa-alert--error usa-alert--no-icon margin-bottom-3" role="alert">
+                        <div class="usa-alert__body">
+                            <h4 class="usa-alert__heading">There are accessibility/validation blocks on this step</h4>
+                            <p class="usa-alert__text">Review structural form parameters listed below highlighted fields matching constraints.</p>
+                        </div>
+                    </div>
+                `;
+                canvas.insertAdjacentHTML('beforeend', errorBannerHTML);
+            }
+
+            // Route dynamic component templates
+            if(step.type === 'intro') {
+                renderIntroCanvas(step, canvas);
+            } else if(step.type === 'question') {
+                renderQuestionCanvas(step, canvas);
+            } else if(step.type === 'review') {
+                renderReviewCanvas(step, canvas);
+            } else if(step.type === 'success') {
+                renderSuccessCanvas(step, canvas);
+            }
+
+            // Global Navigation Footer Inside Preview Container
+            renderCanvasNavigation(canvas);
+        }
+
+        function renderIntroCanvas(step, canvas) {
+            const html = `
+                <div class="usa-prose">
+                    <p class="usa-intro font-sans-md">${step.description || 'Welcome layout view configuration.'}</p>
+                </div>
+            `;
+            canvas.insertAdjacentHTML('beforeend', html);
+        }
+
+        function renderQuestionCanvas(step, canvas) {
+            const formContainer = document.createElement('form');
+            formContainer.className = "usa-form usa-form--large";
+            formContainer.onsubmit = (e) => e.preventDefault();
+
+            step.fields.forEach(field => {
+                const formGroup = document.createElement('div');
+                formGroup.className = `usa-form-group ${forceGlobalErrors && field.required ? 'usa-form-group--error' : ''}`;
+                
+                const reqAttr = field.required ? 'required aria-required="true"' : '';
+                const reqIndicator = field.required ? ' <span class="usa-hint font-sans-3xs text-error">(required)</span>' : '';
+                
+                let labelHTML = `<label class="usa-label ${forceGlobalErrors && field.required ? 'usa-label--error' : ''}" for="${field.id}">${field.label}${reqIndicator}</label>`;
+                let hintHTML = field.hintText ? `<span class="usa-hint" id="${field.id}-hint">${field.hintText}</span>` : '';
+                let errorHTML = (forceGlobalErrors && field.required) ? `<span class="usa-error-message" id="${field.id}-error-message">${field.errorMessage || 'Structural field processing missing validation constraint.'}</span>` : '';
+                
+                formGroup.insertAdjacentHTML('beforeend', labelHTML);
+                formGroup.insertAdjacentHTML('beforeend', hintHTML);
+                formGroup.insertAdjacentHTML('beforeend', errorHTML);
+
+                let fieldInputMarkup = '';
+                const errInputClass = (forceGlobalErrors && field.required) ? 'usa-input--error' : '';
+
+                switch (field.type) {
+                    case 'text':
+                        fieldInputMarkup = `<input class="usa-input ${errInputClass}" id="${field.id}" name="${field.id}" type="text" placeholder="${field.placeholder || ''}" ${reqAttr} aria-describedby="${field.hintText ? field.id+'-hint' : ''} ${forceGlobalErrors && field.required ? field.id+'-error-message' : ''}">`;
+                        break;
+                    case 'textarea':
+                        fieldInputMarkup = `<textarea class="usa-textarea ${errInputClass}" id="${field.id}" name="${field.id}" placeholder="${field.placeholder || ''}" ${reqAttr} aria-describedby="${field.hintText ? field.id+'-hint' : ''} ${forceGlobalErrors && field.required ? field.id+'-error-message' : ''}"></textarea>`;
+                        break;
+                    case 'dropdown':
+                        let optionsHTML = (field.options || []).map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                        fieldInputMarkup = `<select class="usa-select ${errInputClass}" id="${field.id}" name="${field.id}" ${reqAttr}><option value="">- Select option -</option>${optionsHTML}</select>`;
+                        break;
+                    case 'date':
+                        fieldInputMarkup = `
+                            <div class="usa-date-picker" data-name="${field.id}">
+                                <input class="usa-input" id="${field.id}" name="${field.id}" type="text" ${reqAttr}>
+                            </div>`;
+                        break;
+                    case 'file':
+                        fieldInputMarkup = `
+                            <div class="usa-file-input">
+                                <div class="usa-file-input__target">
+                                    <input class="usa-file-input__input" id="${field.id}" name="${field.id}" type="file" ${reqAttr}>
+                                </div>
+                            </div>`;
+                        break;
+                    case 'radio':
+                        (field.options || ["Default Option Matrix"]).forEach((opt, oIdx) => {
+                            fieldInputMarkup += `
+                                <div class="usa-radio">
+                                    <input class="usa-radio__input" id="${field.id}-${oIdx}" type="radio" name="${field.id}" value="${opt}">
+                                    <label class="usa-radio__label" for="${field.id}-${oIdx}">${opt}</label>
+                                </div>`;
+                        });
+                        break;
+                    case 'checkbox':
+                        (field.options || ["Default Acknowledgment Vector"]).forEach((opt, oIdx) => {
+                            fieldInputMarkup += `
+                                <div class="usa-checkbox">
+                                    <input class="usa-checkbox__input" id="${field.id}-${oIdx}" type="checkbox" name="${field.id}" value="${opt}">
+                                    <label class="usa-checkbox__label" for="${field.id}-${oIdx}">${opt}</label>
+                                </div>`;
+                        });
+                        break;
+                }
+
+                const inputContainer = document.createElement('div');
+                inputContainer.innerHTML = fieldInputMarkup;
+                formGroup.appendChild(inputContainer);
+                formContainer.appendChild(formGroup);
+            });
+
+            canvas.appendChild(formContainer);
+        }
+
+        function renderReviewCanvas(step, canvas) {
+            canvas.insertAdjacentHTML('beforeend', `<p class="usa-prose font-sans-sm text-neutral-dark margin-bottom-3">${step.description || 'Review configurations generated sequentially.'}</p>`);
+
+            // Dynamically mirrors every field created across all structural data steps
+            formSchema.steps.forEach(st => {
+                if(st.type === 'question' && st.fields && st.fields.length > 0) {
+                    let stepCardMarkup = `
+                        <div class="usa-card__container border-1px border-neutral-light margin-bottom-2 radius-md overflow-hidden shadow-1">
+                            <header class="padding-x-2 padding-y-1 bg-neutral-lightest border-bottom-1px border-neutral-light display-flex flex-justify flex-align-center">
+                                <h3 class="font-sans-xs text-bold margin-0 text-primary-dark">${st.title}</h3>
+                            </header>
+                            <div class="padding-2 font-sans-3xs grid-row grid-gap-2">
+                    `;
+
+                    st.fields.forEach(f => {
+                        stepCardMarkup += `
+                            <div class="grid-col-12 border-bottom-1px border-neutral-lightest padding-y-1">
+                                <div class="text-semibold text-neutral-dark font-sans-2xs">${f.label}</div>
+                                <div class="text-neutral margin-top-05 text-italic bg-neutral-lightest padding-1 radius-sm">[ Pre-populated Prototype Content Value Node ]</div>
+                            </div>
+                        `;
+                    });
+
+                    stepCardMarkup += `</div></div>`;
+                    canvas.insertAdjacentHTML('beforeend', stepCardMarkup);
+                }
+            });
+        }
+
+        function renderSuccessCanvas(step, canvas) {
+            const html = `
+                <div class="usa-alert usa-alert--success margin-bottom-3">
+                    <div class="usa-alert__body">
+                        <h4 class="usa-alert__heading">Submission Processing Confirmed</h4>
+                        <p class="usa-alert__text">${step.description || 'Operation success context structural output.'}</p>
+                    </div>
+                </div>
+                ${step.calloutText ? `<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-id"><div class="usa-summary-box__body"><h5 class="usa-summary-box__heading" id="summary-box-key-id">Next System Operations</h5><div class="usa-summary-box__text">${step.calloutText}</div></div></div>` : ''}
+            `;
+            canvas.insertAdjacentHTML('beforeend', html);
+        }
+
+        function renderCanvasNavigation(canvas) {
+            const totalSteps = formSchema.steps.length;
+            const currentStep = formSchema.steps[currentStepIndex];
+            
+            let btnLabel = "Continue";
+            if(currentStep.type === 'intro') btnLabel = currentStep.buttonText || "Get Started";
+            if(currentStep.type === 'review') btnLabel = "Submit Application";
+
+            const navHTML = `
+                <div class="display-flex flex-justify margin-top-4 border-top-1px border-neutral-light padding-top-2">
+                    <button class="usa-button usa-button--outline" id="canvas-prev-btn" ${currentStepIndex === 0 ? 'disabled' : ''}>Back</button>
+                    ${currentStepIndex < totalSteps - 1 ? `<button class="usa-button" id="canvas-next-btn">${btnLabel}</button>` : '<div></div>'}
+                </div>
+            `;
+            canvas.insertAdjacentHTML('beforeend', navHTML);
+
+            // Attach operational page navigation actions directly within canvas preview elements
+            const prevBtn = document.getElementById('canvas-prev-btn');
+            const nextBtn = document.getElementById('canvas-next-btn');
+            
+            if(prevBtn) prevBtn.onclick = () => navigateToStep(currentStepIndex - 1);
+            if(nextBtn) nextBtn.onclick = () => navigateToStep(currentStepIndex + 1);
+        }
+
+        // Render Inspector Controls Framework
+        function renderInspector() {
+            const formPanel = document.getElementById('inspector-content-form');
+            const emptyPanel = document.getElementById('inspector-empty-state');
+            
+            if(!selectedEntity.id) {
+                formPanel.style.display = 'none';
+                emptyPanel.style.display = 'block';
+                return;
+            }
+
+            formPanel.style.display = 'block';
+            emptyPanel.style.display = 'none';
+            formPanel.innerHTML = '';
+
+            if(selectedEntity.type === 'step') {
+                const step = formSchema.steps.find(s => s.id === selectedEntity.id);
+                if(!step) return;
+
+                let html = `
+                    <h3 class="font-sans-xs text-bold border-bottom-1px border-neutral padding-bottom-1 margin-top-0">Step Inspector</h3>
+                    <div class="margin-bottom-2">
+                        <label class="usa-label font-sans-3xs" for="ins-step-title">Step Title Bar Display</label>
+                        <input class="usa-input usa-input--small" id="ins-step-title" type="text" value="${step.title || ''}" oninput="updateActiveStepProp('title', this.value)">
+                    </div>
+                `;
+
+                if(step.type === 'intro' || step.type === 'review' || step.type === 'success') {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-3xs" for="ins-step-desc">Section Descriptive Copy</label>
+                            <textarea class="usa-textarea usa-input--small" id="ins-step-desc" oninput="updateActiveStepProp('description', this.value)">${step.description || ''}</textarea>
+                        </div>
+                    `;
+                }
+                if(step.type === 'intro') {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-3xs" for="ins-step-btn">Action Button Text</label>
+                            <input class="usa-input usa-input--small" id="ins-step-btn" type="text" value="${step.buttonText || ''}" oninput="updateActiveStepProp('buttonText', this.value)">
+                        </div>
+                    `;
+                }
+                if(step.type === 'success') {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-3xs" for="ins-step-callout">Callout Summary Text</label>
+                            <textarea class="usa-textarea usa-input--small" id="ins-step-callout" oninput="updateActiveStepProp('calloutText', this.value)">${step.calloutText || ''}</textarea>
+                        </div>
+                    `;
+                }
+
+                formPanel.innerHTML = html;
+
+            } else if (selectedEntity.type === 'field') {
+                const currentStep = formSchema.steps[currentStepIndex];
+                const field = currentStep.fields.find(f => f.id === selectedEntity.id);
+                if(!field) return;
+
+                let html = `
+                    <h3 class="font-sans-xs text-bold border-bottom-1px border-neutral padding-bottom-1 margin-top-0">Field Input Inspector</h3>
+                    <div class="margin-bottom-2">
+                        <span class="font-sans-3xs text-neutral text-bold">ID MAPPING TOKEN:</span>
+                        <code class="display-block bg-neutral-light padding-05 text-bold radius-sm font-sans-3xs margin-top-05">${field.id}</code>
+                    </div>
+                    <div class="margin-bottom-2">
+                        <label class="usa-label font-sans-3xs" for="ins-field-label">Component Label Typography Text</label>
+                        <input class="usa-input usa-input--small" id="ins-field-label" type="text" value="${field.label || ''}" oninput="updateActiveFieldProp('label', this.value)">
+                    </div>
+                    <div class="margin-bottom-2">
+                        <label class="usa-label font-sans-3xs" for="ins-field-hint">USWDS Instructional Hint Copy</label>
+                        <textarea class="usa-textarea usa-input--small" id="ins-field-hint" oninput="updateActiveFieldProp('hintText', this.value)">${field.hintText || ''}</textarea>
+                    </div>
+                    <div class="margin-bottom-2">
+                        <label class="usa-label font-sans-3xs" for="ins-field-err">Contextual Error Assertion Message</label>
+                        <textarea class="usa-textarea usa-input--small" id="ins-field-err" oninput="updateActiveFieldProp('errorMessage', this.value)">${field.errorMessage || ''}</textarea>
+                    </div>
+                `;
+
+                if(['text', 'textarea'].includes(field.type)) {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-3xs" for="ins-field-place">Placeholder Concept Context</label>
+                            <input class="usa-input usa-input--small" id="ins-field-place" type="text" value="${field.placeholder || ''}" oninput="updateActiveFieldProp('placeholder', this.value)">
+                        </div>
+                    `;
+                }
+
+                if(['radio', 'checkbox', 'dropdown'].includes(field.type)) {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-3xs" for="ins-field-opts">Options Parameters (Comma-Separated Grid)</label>
+                            <textarea class="usa-textarea usa-input--small" id="ins-field-opts" oninput="updateActiveFieldOptions(this.value)">${(field.options || []).join(', ')}</textarea>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <div class="usa-checkbox margin-top-2">
+                        <input class="usa-checkbox__input" id="ins-field-req" type="checkbox" name="ins-field-req" ${field.required ? 'checked' : ''} onchange="updateActiveFieldProp('required', this.checked)">
+                        <label class="usa-checkbox__label font-sans-3xs text-bold" for="ins-field-req">Mandatory Validation Constraint</label>
+                    </div>
+                    <button class="usa-button usa-button--error usa-button--unstyled margin-top-3 font-sans-3xs" onclick="deleteActiveField()">🗑️ Remove Component Field</button>
+                `;
+
+                formPanel.innerHTML = html;
+            }
+        }
+
+        // State Editing Mutation Commands
+        function updateActiveStepProp(prop, val) {
+            const step = formSchema.steps.find(s => s.id === selectedEntity.id);
+            if(step) {
+                step[prop] = val;
+                renderCanvas();
+                // Sync main page title card tree view elements dynamically 
+                if(prop === 'title') renderTreePanels();
+            }
+        }
+
+        function updateActiveFieldProp(prop, val) {
+            const currentStep = formSchema.steps[currentStepIndex];
+            const field = currentStep.fields.find(f => f.id === selectedEntity.id);
+            if(field) {
+                field[prop] = val;
+                renderCanvas();
+            }
+        }
+
+        function updateActiveFieldOptions(val) {
+            const currentStep = formSchema.steps[currentStepIndex];
+            const field = currentStep.fields.find(f => f.id === selectedEntity.id);
+            if(field) {
+                field.options = val.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                renderCanvas();
+            }
+        }
+
+        function addNewField(type) {
+            if(!type) return;
+            const currentStep = formSchema.steps[currentStepIndex];
+            if(currentStep.type !== 'question') return;
+
+            const newId = `field_${Date.now().toString().slice(-4)}`;
+            const newField = {
+                id: newId,
+                type: type,
+                label: `Untitled ${type.toUpperCase()} Component Pattern`,
+                hintText: "System instructional utility subtitle text.",
+                required: false,
+                errorMessage: "Field processing execution matching parameters has failed.",
+                options: ['Option Node Alpha', 'Option Node Beta']
+            };
+
+            currentStep.fields.push(newField);
+            selectedEntity = { type: 'field', id: newId };
+            document.getElementById('add-field-select').value = '';
+            renderWorkspaceState();
+        }
+
+        function deleteActiveField() {
+            const currentStep = formSchema.steps[currentStepIndex];
+            if(currentStep.type !== 'question') return;
+            
+            currentStep.fields = currentStep.fields.filter(f => f.id !== selectedEntity.id);
+            selectedEntity = { type: 'step', id: currentStep.id };
+            renderWorkspaceState();
+        }
+
+        // Export Payload Schema JSON Engine Link
+        function exportSchemaJson() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(formSchema, null, 4));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            
+            const standardizedFileName = formSchema.formTitle.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+            downloadAnchorNode.setAttribute("download", `${standardizedFileName || 'uswds-schema'}-prototype.json`);
+            
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        // Import Payload Validation Process Functions
+        function triggerJsonImport() {
+            document.getElementById('jsonFileInput').click();
+        }
+
+        function handleJsonImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsedJson = JSON.parse(e.target.result);
+                    if (parsedJson.formTitle && Array.isArray(parsedJson.steps)) {
+                        formSchema = parsedJson;
+                        currentStepIndex = 0;
+                        selectedEntity = { type: 'step', id: formSchema.steps[0].id };
+                        document.getElementById('app-form-title').value = formSchema.formTitle;
+                        renderWorkspaceState();
+                    } else {
+                        alert("Invalid Schema Violation: Input must contain foundational system top structures ('formTitle' and array components inside 'steps').");
+                    }
+                } catch (err) {
+                    alert("JSON parsing validation execution failed. Review syntax architecture integrity guidelines.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Reset file input token container 
+        }
+    </script>
+</body>
+</html>
