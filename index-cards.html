@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Builder Directory - Card View</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        .header p {
+            color: #666;
+            font-size: 1.2rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+        .card-header {
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+        .card-header.uswds {
+            background: linear-gradient(135deg, #005ea2 0%, #1a4480 100%);
+        }
+        .card-header.bootstrap {
+            background: linear-gradient(135deg, #7952b3 0%, #563d7c 100%);
+        }
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        .card-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .card-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(255,255,255,0.3);
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .card-body {
+            padding: 2rem;
+            flex: 1;
+        }
+        .card-body p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        .features {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #333;
+            font-size: 0.875rem;
+        }
+        .feature-item::before {
+            content: "✓";
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.25rem;
+            height: 1.25rem;
+            background: #4ade80;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+        .card-footer {
+            padding: 0 2rem 2rem 2rem;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background: #667eea;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background: #764ba2;
+            transform: scale(1.02);
+        }
+        .recommended {
+            position: relative;
+        }
+        .recommended::before {
+            content: "⭐ RECOMMENDED";
+            position: absolute;
+            top: -0.75rem;
+            right: 1rem;
+            background: #fbbf24;
+            color: #78350f;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            z-index: 1;
+        }
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .header h1 { font-size: 2rem; }
+            .grid { grid-template-columns: 1fr; gap: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 Form Builder Collection</h1>
+        <p>Explore different design systems and implementations</p>
+    </div>
+    
+    <div class="grid">
+        <!-- Card 1: Original -->
+        <div class="card">
+            <div class="card-header uswds">
+                <div class="card-icon">🏛️</div>
+                <h2>Original USWDS</h2>
+                <span class="card-badge">sample-form.html</span>
+            </div>
+            <div class="card-body">
+                <p>Basic implementation using the U.S. Web Design System. Perfect for government projects requiring USWDS compliance.</p>
+                <div class="features">
+                    <div class="feature-item">Mobile responsive design</div>
+                    <div class="feature-item">USWDS 3.13 components</div>
+                    <div class="feature-item">Government standard styling</div>
+                    <div class="feature-item">Accessibility focused</div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="sample-form.html" class="btn">View Original</a>
+            </div>
+        </div>
+        
+        <!-- Card 2: Testing -->
+        <div class="card">
+            <div class="card-header uswds">
+                <div class="card-icon">🧪</div>
+                <h2>Enhanced Testing</h2>
+                <span class="card-badge">form-testing.html</span>
+            </div>
+            <div class="card-body">
+                <p>Enhanced USWDS version with advanced navigation features and mobile-optimized collapsible panels.</p>
+                <div class="features">
+                    <div class="feature-item">Progress bar tracking</div>
+                    <div class="feature-item">Step indicators</div>
+                    <div class="feature-item">Breadcrumb navigation</div>
+                    <div class="feature-item">Mobile drawer panels</div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="form-testing.html" class="btn">View Testing Version</a>
+            </div>
+        </div>
+        
+        <!-- Card 3: Bootstrap -->
+        <div class="card recommended">
+            <div class="card-header bootstrap">
+                <div class="card-icon">🚀</div>
+                <h2>Bootstrap 5</h2>
+                <span class="card-badge">form-bootstrap.html</span>
+            </div>
+            <div class="card-body">
+                <p>Modern implementation using Bootstrap 5 - the world's most popular design system. Professional and fully-featured.</p>
+                <div class="features">
+                    <div class="feature-item">Bootstrap 5.3 framework</div>
+                    <div class="feature-item">1000+ Bootstrap Icons</div>
+                    <div class="feature-item">Modern gradient design</div>
+                    <div class="feature-item">Complete component library</div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="form-bootstrap.html" class="btn">View Bootstrap Version</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
