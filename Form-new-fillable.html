@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USWDS Form Builder & Interactive Fillable PDF Engine</title>
+    <!-- USWDS Core CDN Styles -->
+    <link class="cdn-link" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uswds/3.13.0/css/uswds.min.css">
+    <style>
+        /* Workspace layout structural tokens */
+        body, html { height: 100%; margin: 0; overflow: hidden; }
+        .workspace-container { display: flex; height: calc(100vh - 120px); overflow: hidden; }
+        .panel-sidebar { width: 360px; background-color: #f0f4f9; border-right: 1px solid #adcded; overflow-y: auto; transition: all 0.2s ease; }
+        .panel-canvas { flex: 1; background-color: #ffffff; overflow-y: auto; position: relative; transition: all 0.2s ease; }
+        .panel-inspector { width: 360px; background-color: #f0f4f9; border-left: 1px solid #adcded; overflow-y: auto; transition: all 0.2s ease; }
+        .tree-item { cursor: pointer; transition: background 0.1s ease; padding: 6px 8px; border-radius: 4px; margin-top: 2px; margin-bottom: 2px; }
+        .tree-item:hover { background-color: #dfeefc; }
+        .tree-item.is-selected { background-color: #005ea2; color: white; }
+        .tree-item.is-selected text, .tree-item.is-selected button, .tree-item.is-selected span { color: white !important; }
+        .preview-mode-badge { position: fixed; top: 130px; right: 20px; z-index: 1000; opacity: 0.85; pointer-events: none; }
+        .hidden-file-input { display: none; }
+        .reorder-btn { background: none; border: none; cursor: pointer; padding: 0 4px; font-size: 0.75rem; }
+        .reorder-btn:hover { opacity: 0.7; }
+        .tree-sub-list { padding-left: 1.5rem; border-left: 1px dashed #adcded; margin-left: 0.5rem; }
+    </style>
+</head>
+<body>
+
+    <!-- Workspace Environment Utility Banner -->
+    <section class="usa-banner" aria-label="Official workspace banner" id="workspace-top-banner">
+        <div class="usa-banner__header bg-neutral-darkest text-neutral-lightest padding-y-05 font-sans-3xs">
+            <div class="grid-container maxw-widescreen display-flex flex-justify flex-align-center">
+                <div>🛠️ USWDS Prototype Builder & Fillable PDF Generator Engine — Core 3.13.0 Profile</div>
+                <div class="text-accent-cool text-bold">Dynamic PDF Form Control Synthesis Active</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- App System Control Header Bar -->
+    <header class="usa-header usa-header--basic bg-neutral-dark text-white padding-y-2">
+        <div class="grid-container maxw-widescreen display-flex flex-justify flex-align-center">
+            <div>
+                <em class="usa-logo__text font-sans-lg text-bold text-white margin-0">USWDS Form Prototype Engine</em>
+                <p class="text-neutral-light font-sans-3xs margin-0">JSON & Fillable PDF UX Architecture Suite</p>
+            </div>
+            <div class="display-flex gap-1 flex-align-center">
+                <button class="usa-button usa-button--accent-cool text-bold" onclick="generateFillablePdf()">
+                    📄 Export Fillable PDF
+                </button>
+                <div class="border-right-1px border-neutral-medium margin-x-1 height-3"></div>
+                <button id="fullScreenToggleBtn" class="usa-button usa-button--outline usa-button--inverse" onclick="toggleFullScreenPreview()">
+                    Full Screen Preview
+                </button>
+                <button class="usa-button usa-button--outline usa-button--inverse" onclick="triggerJsonImport()">
+                    Upload JSON
+                </button>
+                <input type="file" id="jsonFileInput" class="hidden-file-input" accept=".json" onchange="handleJsonImport(event)">
+                <button class="usa-button usa-button--outline usa-button--inverse" onclick="exportSchemaJson()">
+                    Download JSON
+                </button>
+                <button id="errorToggleBtn" class="usa-button usa-button--secondary" onclick="toggleGlobalErrors()">
+                    Errors: OFF
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dynamic Workspace Application Core Viewport -->
+    <main class="workspace-container">
+        
+        <!-- LEFT PANEL: Global Attributes & Sequence Architecture Tree -->
+        <aside class="panel-sidebar padding-2" id="sidebar-panel">
+            <h2 class="font-sans-xs text-bold text-uppercase tracking-1 margin-bottom-2 text-primary-darker">Form Architecture</h2>
+            
+            <div class="margin-bottom-2">
+                <label class="usa-label font-sans-3xs margin-top-0" for="app-site-title">Global Site Title (Header)</label>
+                <input class="usa-input usa-input--small" id="app-site-title" type="text" oninput="updateSiteTitle(this.value)">
+            </div>
+
+            <div class="margin-bottom-3">
+                <label class="usa-label font-sans-3xs margin-top-0" for="app-form-title">Form Transaction Title</label>
+                <input class="usa-input usa-input--small" id="app-form-title" type="text" oninput="updateFormTitle(this.value)">
+            </div>
+
+            <div class="display-flex flex-justify flex-align-center margin-bottom-1">
+                <span class="font-sans-3xs text-bold text-neutral">PAGES & SEQUENCING</span>
+            </div>
+            
+            <ul class="usa-list usa-list--unstyled margin-bottom-2" id="pages-list-tree">
+                <!-- Programmatically populated via state logic -->
+            </ul>
+            
+            <button type="button" class="usa-button usa-button--unstyled text-primary text-bold font-sans-3xs margin-bottom-3 display-flex flex-align-center" onclick="addNewQuestionPage()">
+                <span class="margin-right-05 font-sans-xs">➕</span> Add Question Page
+            </button>
+
+            <!-- NESTED GROUPS & COMPONENT MATRIX -->
+            <div id="fields-tree-section" style="display:none;">
+                <div class="display-flex flex-justify flex-align-center border-top-1px border-neutral-light padding-top-2 margin-bottom-1">
+                    <span class="font-sans-3xs text-bold text-neutral">QUESTION GROUPS ON PAGE</span>
+                </div>
+                
+                <div id="groups-tree-container">
+                    <!-- Dynamic nested groups and fields tree -->
+                </div>
+
+                <button type="button" class="usa-button usa-button--outline usa-button--small margin-top-2 width-full font-sans-3xs" onclick="addNewGroup()">
+                    📂 New Question Group
+                </button>
+            </div>
+        </aside>
+
+        <!-- CENTER PANEL: Live Interactive Workspace Canvas Frame -->
+        <section class="panel-canvas bg-neutral-lightest" id="canvas-container">
+            <span class="usa-badge bg-neutral-medium preview-mode-badge" id="canvas-badge">LIVE COMPONENT PREVIEW</span>
+            
+            <div id="uswds-rendering-canvas">
+                <!-- Sandbox rendering portal frame target -->
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: Contextual Inspector Panel -->
+        <aside class="panel-inspector padding-2" id="inspector-panel-view">
+            <div id="inspector-empty-state" class="text-center padding-top-4">
+                <p class="text-italic text-neutral">Select a step, group, or field from the hierarchy tree to inspect and configure its parameters.</p>
+            </div>
+            <div id="inspector-content-form" style="display:none;">
+                <!-- Content loaded dynamically via controller triggers -->
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- Client-Side PDF Generation Engine Library (PDF-Lib) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+    <!-- Official USWDS Framework JavaScript Delivery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uswds/3.13.0/js/uswds.min.js"></script>
+
+    <script>
+        // Data Model State Profile Context Payload
+        let formSchema = {
+            siteTitle: "Benefits Gateway Enterprise",
+            formTitle: "Department of Identity Services Application",
+            steps: [
+                {
+                    id: "intro_step",
+                    title: "Before You Begin",
+                    type: "intro",
+                    description: "This structural runtime prototype guides applicants through processing requirements under Title 44 provisions. Ensure document prerequisites are met.",
+                    buttonText: "Get Started",
+                    showSaveExit: false
+                },
+                {
+                    id: "personal_info_step",
+                    title: "Personal Information",
+                    type: "question",
+                    showSaveExit: true,
+                    groups: [
+                        {
+                            id: "g_identity",
+                            legend: "Applicant Legal Identity",
+                            fields: [
+                                { id: "f_name", type: "text", label: "First Name", hintText: "Enter full legal given name.", required: true, errorMessage: "First name is required.", placeholder: "Jane", value: "" },
+                                { id: "l_name", type: "text", label: "Last Name", hintText: "Enter family or surname.", required: true, errorMessage: "Last name is required.", placeholder: "Doe", value: "" },
+                                { id: "dob", type: "date", label: "Date of Birth", hintText: "Format: MM/DD/YYYY", required: true, errorMessage: "Valid date of birth required.", value: "" }
+                            ]
+                        },
+                        {
+                            id: "g_citizenship",
+                            legend: "Legal Status & Declarations",
+                            fields: [
+                                { id: "citizenship", type: "radio", label: "Citizenship Profile", hintText: "Select primary alignment category.", required: true, errorMessage: "Selection is required.", options: ["U.S. Native Citizen", "Naturalized Citizen", "Permanent Resident Card Holder"], value: "" },
+                                { id: "bio_summary", type: "textarea", label: "Brief Eligibility Statement", hintText: "Describe reason for application request.", required: false, errorMessage: "", placeholder: "Type statement here...", value: "" }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: "review_step",
+                    title: "Review Application Specifications",
+                    type: "review",
+                    description: "Verify configuration choices compiled by active data mapping before publishing structural state vectors.",
+                    showSaveExit: true
+                },
+                {
+                    id: "success_step",
+                    title: "Transaction Request Finalized",
+                    type: "success",
+                    description: "Your operational layout payload has passed verification gateways. Track structural execution sequence receipt ID: #USWDS-8472-9922X.",
+                    calloutText: "Processing window takes up to 3 business cycles. Confirmation alerts have been broadcasted to registered profile nodes.",
+                    showSaveExit: false
+                }
+            ]
+        };
+
+        let currentStepIndex = 0;
+        let selectedEntity = { type: 'step', id: 'intro_step', groupId: null }; 
+        let forceGlobalErrors = false;
+        let isFullScreenPreview = false;
+        let canvasViewMode = "form"; 
+        let formSubmissionState = "draft"; 
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('app-site-title').value = formSchema.siteTitle;
+            document.getElementById('app-form-title').value = formSchema.formTitle;
+            renderWorkspaceState();
+        });
+
+        function toggleGlobalErrors() {
+            forceGlobalErrors = !forceGlobalErrors;
+            const btn = document.getElementById('errorToggleBtn');
+            btn.className = forceGlobalErrors ? "usa-button usa-button--error" : "usa-button usa-button--secondary";
+            btn.innerText = forceGlobalErrors ? "Errors: FORCE ON" : "Errors: OFF";
+            updateBadgeText();
+            renderCanvas();
+        }
+
+        function updateBadgeText() {
+            const badge = document.getElementById('canvas-badge');
+            if (canvasViewMode === "landing") {
+                badge.innerText = "SIMULATED AGENCY LANDING HUB";
+                badge.className = "usa-badge bg-primary-darker preview-mode-badge";
+                return;
+            }
+            if(isFullScreenPreview) {
+                badge.innerText = forceGlobalErrors ? "FULL SCREEN SIMULATION (ERRORS ACTIVE)" : "FULL SCREEN SIMULATION";
+                badge.className = forceGlobalErrors ? "usa-badge bg-error preview-mode-badge" : "usa-badge bg-primary-dark preview-mode-badge";
+            } else {
+                badge.innerText = forceGlobalErrors ? "VISUAL ERROR MATRIX ACTIVATED" : "LIVE COMPONENT PREVIEW";
+                badge.className = forceGlobalErrors ? "usa-badge bg-error preview-mode-badge" : "usa-badge bg-neutral-medium preview-mode-badge";
+            }
+        }
+
+        function toggleFullScreenPreview() {
+            isFullScreenPreview = !isFullScreenPreview;
+            const sidebar = document.getElementById('sidebar-panel');
+            const inspector = document.getElementById('inspector-panel-view');
+            const canvasContainer = document.getElementById('canvas-container');
+            const toggleBtn = document.getElementById('fullScreenToggleBtn');
+            const topBanner = document.getElementById('workspace-top-banner');
+
+            if(isFullScreenPreview) {
+                sidebar.style.display = 'none';
+                inspector.style.display = 'none';
+                topBanner.style.display = 'none';
+                canvasContainer.className = "panel-canvas bg-white";
+                toggleBtn.innerText = "Show Editor Panels";
+                toggleBtn.className = "usa-button usa-button--primary";
+            } else {
+                sidebar.style.display = 'block';
+                inspector.style.display = 'block';
+                topBanner.style.display = 'block';
+                canvasContainer.className = "panel-canvas bg-neutral-lightest padding-4";
+                toggleBtn.innerText = "Full Screen Preview";
+                toggleBtn.className = "usa-button usa-button--outline usa-button--inverse";
+            }
+            updateBadgeText();
+            renderCanvas();
+        }
+
+        function updateSiteTitle(val) {
+            formSchema.siteTitle = val;
+            renderCanvas();
+        }
+
+        function updateFormTitle(val) {
+            formSchema.formTitle = val;
+            renderCanvas();
+        }
+
+        function navigateToStep(idx) {
+            if(idx >= 0 && idx < formSchema.steps.length) {
+                canvasViewMode = "form"; 
+                currentStepIndex = idx;
+                selectedEntity = { type: 'step', id: formSchema.steps[idx].id, groupId: null };
+                renderWorkspaceState();
+            }
+        }
+
+        function selectGroupEntity(groupId) {
+            selectedEntity = { type: 'group', id: groupId, groupId: groupId };
+            renderWorkspaceState();
+        }
+
+        function selectFieldEntity(fieldId, groupId) {
+            selectedEntity = { type: 'field', id: fieldId, groupId: groupId };
+            renderWorkspaceState();
+        }
+
+        function renderWorkspaceState() {
+            renderTreePanels();
+            renderCanvas();
+            renderInspector();
+            if(window.USWDS && typeof window.USWDS.refetch === 'function') {
+                window.USWDS.refetch();
+            }
+        }
+
+        function addNewQuestionPage() {
+            const reviewIdx = formSchema.steps.findIndex(s => s.type === 'review');
+            const newPageId = `page_${Date.now().toString().slice(-4)}`;
+            const newPage = {
+                id: newPageId,
+                title: "Additional Questions Step",
+                type: "question",
+                showSaveExit: true,
+                groups: [
+                    {
+                        id: `group_${Date.now().toString().slice(-3)}`,
+                        legend: "Unclustered Questions",
+                        fields: []
+                    }
+                ]
+            };
+
+            if(reviewIdx !== -1) {
+                formSchema.steps.splice(reviewIdx, 0, newPage);
+                currentStepIndex = reviewIdx; 
+            } else {
+                formSchema.steps.push(newPage);
+                currentStepIndex = formSchema.steps.length - 1;
+            }
+            selectedEntity = { type: 'step', id: newPageId, groupId: null };
+            renderWorkspaceState();
+        }
+
+        function addNewGroup() {
+            const currentStep = formSchema.steps[currentStepIndex];
+            if (currentStep.type !== 'question') return;
+            const newGroupId = `group_${Date.now().toString().slice(-4)}`;
+            currentStep.groups.push({
+                id: newGroupId,
+                legend: "New Question Group Cluster",
+                fields: []
+            });
+            selectedEntity = { type: 'group', id: newGroupId, groupId: newGroupId };
+            renderWorkspaceState();
+        }
+
+        function storeCanvasValue(fieldId, value) {
+            const currentStep = formSchema.steps[currentStepIndex];
+            if(currentStep.type === 'question') {
+                currentStep.groups.forEach(g => {
+                    const field = g.fields.find(f => f.id === fieldId);
+                    if(field) field.value = value;
+                });
+            }
+        }
+
+        function storeArrayCanvasValues(fieldId, optionValue, isChecked) {
+            const currentStep = formSchema.steps[currentStepIndex];
+            if(currentStep.type === 'question') {
+                currentStep.groups.forEach(g => {
+                    const field = g.fields.find(f => f.id === fieldId);
+                    if(field) {
+                        if(!Array.isArray(field.value)) field.value = [];
+                        if(isChecked) {
+                            if(!field.value.includes(optionValue)) field.value.push(optionValue);
+                        } else {
+                            field.value = field.value.filter(v => v !== optionValue);
+                        }
+                    }
+                });
+            }
+        }
+
+        function renderTreePanels() {
+            const pagesTree = document.getElementById('pages-list-tree');
+            pagesTree.innerHTML = '';
+            
+            formSchema.steps.forEach((step, idx) => {
+                const isSelected = (canvasViewMode === "form" && selectedEntity.type === 'step' && selectedEntity.id === step.id);
+                const li = document.createElement('li');
+                li.className = `tree-item font-sans-2xs display-flex flex-align-center ${isSelected ? 'is-selected' : 'text-neutral-dark'}`;
+                li.onclick = (e) => { e.stopPropagation(); navigateToStep(idx); };
+                
+                let iconChar = "📄";
+                if(step.type === 'intro') iconChar = "🏁";
+                if(step.type === 'review') iconChar = "👁️";
+                if(step.type === 'success') iconChar = "✅";
+                
+                li.innerHTML = `
+                    <span class="margin-right-1">${iconChar}</span> 
+                    <span class="text-semibold text-truncate flex-1">${step.title}</span>
+                    ${step.type === 'question' ? `<button type="button" class="usa-button usa-button--unstyled text-secondary font-sans-3xs padding-x-05 margin-left-1" onclick="deletePage(${idx}, event)" title="Delete Page">❌</button>` : ''}
+                `;
+                pagesTree.appendChild(li);
+            });
+
+            const currentStep = formSchema.steps[currentStepIndex];
+            const fieldsTreeSection = document.getElementById('fields-tree-section');
+            const groupsTreeContainer = document.getElementById('groups-tree-container');
+            groupsTreeContainer.innerHTML = '';
+
+            if (canvasViewMode === "form" && currentStep.type === 'question') {
+                fieldsTreeSection.style.display = 'block';
+                
+                currentStep.groups.forEach((group, gIdx) => {
+                    const isGroupSelected = (selectedEntity.type === 'group' && selectedEntity.id === group.id);
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = "margin-bottom-2";
+                    
+                    let groupHeaderHTML = `
+                        <div class="tree-item font-sans-3xs text-bold bg-neutral-light text-primary-dark display-flex flex-align-center ${isGroupSelected ? 'is-selected' : ''}" onclick="selectGroupEntity('${group.id}')">
+                            <span class="margin-right-1">📂</span>
+                            <span class="text-truncate flex-1">${group.legend || '[No Legend]'}</span>
+                            <button type="button" class="usa-button usa-button--unstyled text-error font-sans-3xs padding-x-05 margin-left-05" onclick="deleteGroup('${group.id}', event)">❌</button>
+                        </div>
+                    `;
+                    groupDiv.insertAdjacentHTML('beforeend', groupHeaderHTML);
+                    
+                    const fieldsUl = document.createElement('ul');
+                    fieldsUl.className = "usa-list usa-list--unstyled tree-sub-list";
+                    
+                    group.fields.forEach((f, fIdx) => {
+                        const isFieldSelected = (selectedEntity.type === 'field' && selectedEntity.id === f.id);
+                        const fieldLi = document.createElement('li');
+                        fieldLi.className = `tree-item font-sans-3xs display-flex flex-align-center ${isFieldSelected ? 'is-selected' : 'text-neutral-dark'}`;
+                        fieldLi.onclick = (e) => { e.stopPropagation(); selectFieldEntity(f.id, group.id); };
+                        
+                        fieldLi.innerHTML = `
+                            <span class="margin-right-1 text-neutral-medium">⚙️</span>
+                            <div class="text-truncate flex-1"><strong>${f.id}</strong> <span class="text-italic font-sans-3xs">(${f.type})</span></div>
+                            <div class="display-flex margin-left-1">
+                                <button type="button" class="reorder-btn text-neutral" onclick="moveField('${group.id}', ${fIdx}, -1, event)" title="Move Up" ${fIdx === 0 ? 'disabled style="opacity:0.2;"' : ''}>▲</button>
+                                <button type="button" class="reorder-btn text-neutral" onclick="moveField('${group.id}', ${fIdx}, 1, event)" title="Move Down" ${fIdx === group.fields.length - 1 ? 'disabled style="opacity:0.2;"' : ''}>▼</button>
+                            </div>
+                        `;
+                        fieldsUl.appendChild(fieldLi);
+                    });
+                    
+                    const addFieldSelectHTML = `
+                        <li class="padding-y-05 padding-x-1">
+                            <select class="usa-select usa-select--small font-sans-3xs margin-top-0" style="height:1.75rem; padding:2px;" onchange="addNewField('${group.id}', this.value); this.value='';">
+                                <option value="">+ Add Field to Group</option>
+                                <option value="text">Text Input</option>
+                                <option value="textarea">Text Area</option>
+                                <option value="radio">Radio Buttons</option>
+                                <option value="checkbox">Checkboxes</option>
+                                <option value="dropdown">Dropdown Select</option>
+                                <option value="date">Date Picker</option>
+                                <option value="file">File Upload</option>
+                            </select>
+                        </li>
+                    `;
+                    fieldsUl.insertAdjacentHTML('beforeend', addFieldSelectHTML);
+                    
+                    groupDiv.appendChild(fieldsUl);
+                    groupsTreeContainer.appendChild(groupDiv);
+                });
+            } else {
+                fieldsTreeSection.style.display = 'none';
+            }
+        }
+
+        function moveField(groupId, fieldIdx, direction, event) {
+            event.stopPropagation();
+            const currentStep = formSchema.steps[currentStepIndex];
+            const group = currentStep.groups.find(g => g.id === groupId);
+            if (!group) return;
+            
+            const targetIdx = fieldIdx + direction;
+            if (targetIdx < 0 || targetIdx >= group.fields.length) return;
+            
+            const temp = group.fields[fieldIdx];
+            group.fields[fieldIdx] = group.fields[targetIdx];
+            group.fields[targetIdx] = temp;
+            
+            renderWorkspaceState();
+        }
+
+        function deletePage(idx, event) {
+            event.stopPropagation();
+            if(formSchema.steps.length <= 1) return;
+            formSchema.steps.splice(idx, 1);
+            currentStepIndex = 0;
+            selectedEntity = { type: 'step', id: formSchema.steps[0].id, groupId: null };
+            renderWorkspaceState();
+        }
+
+        function deleteGroup(groupId, event) {
+            event.stopPropagation();
+            const currentStep = formSchema.steps[currentStepIndex];
+            currentStep.groups = currentStep.groups.filter(g => g.id !== groupId);
+            selectedEntity = { type: 'step', id: currentStep.id, groupId: null };
+            renderWorkspaceState();
+        }
+
+        function routeToLandingPage(statusStr) {
+            formSubmissionState = statusStr;
+            canvasViewMode = "landing";
+            updateBadgeText();
+            renderTreePanels();
+            renderCanvas();
+        }
+
+        function restartApplicationWorkflow() {
+            formSchema.steps.forEach(st => {
+                if(st.groups) {
+                    st.groups.forEach(g => {
+                        if(g.fields) g.fields.forEach(f => f.value = "");
+                    });
+                }
+            });
+            navigateToStep(0);
+        }
+
+        function renderCanvas() {
+            const masterCanvas = document.getElementById('uswds-rendering-canvas');
+            masterCanvas.innerHTML = '';
+
+            let headerContextHTML = `
+                <section class="usa-banner" aria-label="Official website of the United States government">
+                    <div class="usa-banner__header">
+                        <div class="usa-banner__inner">
+                            <div class="grid-col-auto"><img class="usa-banner__header-flag" src="https://cdnjs.cloudflare.com/ajax/libs/uswds/3.13.0/img/usflag.png" alt="U.S. flag"></div>
+                            <div class="grid-col-fill tablet:grid-col-auto">
+                                <p class="usa-banner__header-text">An official website of the United States government</p>
+                                <p class="usa-banner__header-action" aria-hidden="true">Here’s how you know</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <header class="usa-header usa-header--basic border-bottom-1px border-neutral-light bg-white">
+                    <div class="usa-nav-container maxw-tablet padding-x-2">
+                        <div class="usa-navbar">
+                            <div class="usa-logo" id="basic-logo">
+                                <em class="usa-logo__text"><a href="javascript:void(0)" onclick="navigateToStep(0)" class="text-primary-darker font-sans-md text-bold">${formSchema.siteTitle || 'Government Portal'}</a></em>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+            `;
+            masterCanvas.insertAdjacentHTML('beforeend', headerContextHTML);
+
+            if (canvasViewMode === "landing") {
+                renderLandingProfileView(masterCanvas);
+            } else {
+                renderFormStepProfileView(masterCanvas);
+            }
+
+            let footerContextHTML = `
+                <footer class="usa-footer usa-footer--slim bg-neutral-lightest border-top-1px border-neutral-light margin-top-6">
+                    <div class="usa-footer__secondary-section padding-y-3">
+                        <div class="grid-container maxw-tablet font-sans-3xs text-neutral display-flex flex-justify">
+                            <div><strong>Agency Operations Gateway Profile</strong><br>Privacy Policy &bull; Freedom of Information Act &bull; Accessibility Support Statement</div>
+                            <div class="text-right">Powered by USWDS v3<br>Structural Sandboxed Template Architecture</div>
+                        </div>
+                    </div>
+                </footer>
+            `;
+            masterCanvas.insertAdjacentHTML('beforeend', footerContextHTML);
+        }
+
+        function renderLandingProfileView(masterCanvas) {
+            let statusTagHTML = '';
+            let statusMessageHTML = '';
+            let actionBtnHTML = '';
+
+            if (formSubmissionState === "submitted") {
+                statusTagHTML = `<span class="usa-tag bg-success text-white text-bold">SUBMITTED</span>`;
+                statusMessageHTML = `
+                    <p class="margin-top-1 margin-bottom-0 font-sans-3xs text-neutral">Receipt Confirmation Token: <code class="text-bold text-neutral-dark">#USWDS-8472-9922X</code></p>
+                    <p class="font-sans-2xs text-neutral-dark margin-y-2">Your form data vector payload passed validation filters and has been filed under core archiving protocols.</p>
+                `;
+                actionBtnHTML = `<button type="button" class="usa-button usa-button--outline" onclick="restartApplicationWorkflow()">Start a New Application</button>`;
+            } else {
+                statusTagHTML = `<span class="usa-tag bg-warning text-white text-bold">IN PROGRESS / DRAFT</span>`;
+                statusMessageHTML = `
+                    <p class="margin-top-1 margin-bottom-0 font-sans-3xs text-neutral">Last Activity: Just now &bull; Paused on Step ${currentStepIndex + 1} of ${formSchema.steps.length}</p>
+                    <p class="font-sans-2xs text-neutral-dark margin-y-2">Your configuration changes have been safely cached. You may return to complete your filing session at any time without loss of context.</p>
+                `;
+                actionBtnHTML = `<button type="button" class="usa-button" onclick="navigateToStep(${currentStepIndex})">Resume Application Sequence</button>`;
+            }
+
+            const landingHTML = `
+                <section class="usa-hero bg-primary-darkest text-white padding-y-6 padding-x-3 text-left" style="background-image: linear-gradient(rgba(0, 20, 58, 0.85), rgba(0, 20, 58, 0.85)), url('https://cdnjs.cloudflare.com/ajax/libs/uswds/3.13.0/img/hero.png'); background-size: cover; background-position: center;">
+                    <div class="grid-container maxw-tablet">
+                        <h2 class="usa-hero__heading font-sans-xl text-white margin-top-0"><span class="usa-hero__heading--alt font-sans-xs text-bold tracking-2 text-accent-cool text-uppercase">${formSchema.siteTitle} Hub</span><br>Your Accounts Dashboard</h2>
+                        <p class="font-sans-xs text-neutral-light maxw-desktop margin-bottom-0">Review active declaration processes, check processing receipts, and track dynamic structural form workflows.</p>
+                    </div>
+                </section>
+                
+                <div class="grid-container maxw-tablet padding-y-4 padding-x-3">
+                    <h3 class="font-sans-xs text-bold text-uppercase tracking-1 text-primary margin-bottom-2">Your Application Vectors</h3>
+                    
+                    <div class="grid-row grid-gap">
+                        <div class="tablet:grid-col-12 margin-bottom-3">
+                            <div class="usa-card__container border-1px border-neutral-light bg-white radius-md shadow-1 padding-3">
+                                <div class="display-flex flex-justify flex-align-center border-bottom-1px border-neutral-lightest padding-bottom-1">
+                                    <h4 class="font-sans-sm text-bold text-primary-darker margin-0">${formSchema.formTitle}</h4>
+                                    ${statusTagHTML}
+                                </div>
+                                <div class="padding-y-1">
+                                    ${statusMessageHTML}
+                                </div>
+                                <div class="margin-top-1">
+                                    ${actionBtnHTML}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tablet:grid-col-12">
+                            <div class="usa-card__container border-1px border-neutral-light bg-neutral-lightest radius-md padding-3 display-flex flex-align-center">
+                                <div class="margin-right-2 font-sans-lg">💡</div>
+                                <div>
+                                    <h4 class="font-sans-3xs text-bold text-uppercase tracking-1 text-neutral margin-0">Fillable PDF Export Notice</h4>
+                                    <p class="font-sans-3xs text-neutral-dark margin-top-05 margin-bottom-0">Click the <strong>'📄 Export Fillable PDF'</strong> button in the top navigation header at any time to compile this schema into an interactive PDF document.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            masterCanvas.insertAdjacentHTML('beforeend', landingHTML);
+        }
+
+        function renderFormStepProfileView(masterCanvas) {
+            const step = formSchema.steps[currentStepIndex];
+            const mainSectionWrapper = document.createElement('main');
+            mainSectionWrapper.className = isFullScreenPreview ? "grid-container maxw-tablet padding-y-6 padding-x-3 bg-white minh-viewport" : "grid-container maxw-tablet padding-y-4 padding-x-3 bg-white margin-y-2 radius-md shadow-2";
+            
+            const formHeaderHTML = `
+                <div class="border-bottom-1px border-neutral-light padding-bottom-2 margin-bottom-3">
+                    <div class="font-sans-3xs text-neutral display-flex flex-justify margin-bottom-1">
+                        <span class="text-bold text-uppercase tracking-2 text-neutral-medium">${formSchema.formTitle}</span>
+                        <span class="text-semibold">Step ${currentStepIndex + 1} of ${formSchema.steps.length}</span>
+                    </div>
+                    <h1 class="usa-heading font-sans-xl margin-top-0 margin-bottom-0 text-primary-darker">${step.title}</h1>
+                </div>
+            `;
+            mainSectionWrapper.insertAdjacentHTML('beforeend', formHeaderHTML);
+
+            if(forceGlobalErrors && step.type === 'question') {
+                const errorBannerHTML = `
+                    <div class="usa-alert usa-alert--error usa-alert--no-icon margin-bottom-3" role="alert">
+                        <div class="usa-alert__body">
+                            <h4 class="usa-alert__heading">Please correct the validation gaps below</h4>
+                            <p class="usa-alert__text">Review structural form fields highlighted inside compliance profiles parameters matrix view frame.</p>
+                        </div>
+                    </div>
+                `;
+                mainSectionWrapper.insertAdjacentHTML('beforeend', errorBannerHTML);
+            }
+
+            if(step.type === 'intro') {
+                renderIntroCanvas(step, mainSectionWrapper);
+            } else if(step.type === 'question') {
+                renderQuestionCanvas(step, mainSectionWrapper);
+            } else if(step.type === 'review') {
+                renderReviewCanvas(step, mainSectionWrapper);
+            } else if(step.type === 'success') {
+                renderSuccessCanvas(step, mainSectionWrapper);
+            }
+
+            renderCanvasNavigation(mainSectionWrapper);
+            masterCanvas.appendChild(mainSectionWrapper);
+        }
+
+        function renderIntroCanvas(step, container) {
+            container.insertAdjacentHTML('beforeend', `
+                <div class="usa-prose">
+                    <p class="usa-intro font-sans-md text-neutral-dark">${step.description || 'Welcome layout view configuration step.'}</p>
+                </div>
+            `);
+        }
+
+        function renderQuestionCanvas(step, container) {
+            const formContainer = document.createElement('form');
+            formContainer.className = "usa-form usa-form--large";
+            formContainer.onsubmit = (e) => e.preventDefault();
+
+            if(!step.groups || step.groups.length === 0) {
+                formContainer.insertAdjacentHTML('beforeend', `<p class="text-italic text-neutral font-sans-2xs padding-y-2">No question clusters or groups configured. Create a group first.</p>`);
+            }
+
+            step.groups.forEach(group => {
+                const fieldsetElement = document.createElement('fieldset');
+                fieldsetElement.className = "usa-fieldset margin-bottom-4 padding-2 bg-neutral-lightest radius-sm border-1px border-neutral-light";
+                
+                if (group.legend) {
+                    fieldsetElement.insertAdjacentHTML('beforeend', `
+                        <legend class="usa-legend font-sans-xs text-bold text-primary-dark padding-x-1">${group.legend}</legend>
+                    `);
+                }
+
+                group.fields.forEach(field => {
+                    const formGroup = document.createElement('div');
+                    formGroup.className = `usa-form-group ${forceGlobalErrors && field.required ? 'usa-form-group--error' : ''}`;
+                    
+                    const reqAttr = field.required ? 'required aria-required="true"' : '';
+                    const reqIndicator = field.required ? ' <span class="usa-hint font-sans-3xs text-error">(required)</span>' : '';
+                    
+                    let labelHTML = `<label class="usa-label ${forceGlobalErrors && field.required ? 'usa-label--error' : ''}" for="${field.id}">${field.label}${reqIndicator}</label>`;
+                    let hintHTML = field.hintText ? `<span class="usa-hint" id="${field.id}-hint">${field.hintText}</span>` : '';
+                    let errorHTML = (forceGlobalErrors && field.required) ? `<span class="usa-error-message" id="${field.id}-error-message">${field.errorMessage || 'Field validation failure verification criteria.'}</span>` : '';
+                    
+                    formGroup.insertAdjacentHTML('beforeend', labelHTML);
+                    formGroup.insertAdjacentHTML('beforeend', hintHTML);
+                    formGroup.insertAdjacentHTML('beforeend', errorHTML);
+
+                    let fieldInputMarkup = '';
+                    const errInputClass = (forceGlobalErrors && field.required) ? 'usa-input--error' : '';
+                    const storedVal = field.value || '';
+
+                    switch (field.type) {
+                        case 'text':
+                            fieldInputMarkup = `<input class="usa-input ${errInputClass}" id="${field.id}" name="${field.id}" type="text" placeholder="${field.placeholder || ''}" ${reqAttr} value="${storedVal}" oninput="storeCanvasValue('${field.id}', this.value)" aria-describedby="${field.hintText ? field.id+'-hint' : ''} ${forceGlobalErrors && field.required ? field.id+'-error-message' : ''}">`;
+                            break;
+                        case 'textarea':
+                            fieldInputMarkup = `<textarea class="usa-textarea ${errInputClass}" id="${field.id}" name="${field.id}" placeholder="${field.placeholder || ''}" ${reqAttr} oninput="storeCanvasValue('${field.id}', this.value)" aria-describedby="${field.hintText ? field.id+'-hint' : ''} ${forceGlobalErrors && field.required ? field.id+'-error-message' : ''}">${storedVal}</textarea>`;
+                            break;
+                        case 'dropdown':
+                            let optionsHTML = (field.options || []).map(opt => `<option value="${opt}" ${storedVal === opt ? 'selected' : ''}>${opt}</option>`).join('');
+                            fieldInputMarkup = `<select class="usa-select ${errInputClass}" id="${field.id}" name="${field.id}" ${reqAttr} onchange="storeCanvasValue('${field.id}', this.value)"><option value="">- Select option -</option>${optionsHTML}</select>`;
+                            break;
+                        case 'date':
+                            fieldInputMarkup = `
+                                <div class="usa-date-picker" data-name="${field.id}">
+                                    <input class="usa-input" id="${field.id}" name="${field.id}" type="text" ${reqAttr} value="${storedVal}" onchange="storeCanvasValue('${field.id}', this.value)">
+                                </div>`;
+                            break;
+                        case 'file':
+                            fieldInputMarkup = `
+                                <div class="usa-file-input">
+                                    <div class="usa-file-input__target">
+                                        <input class="usa-file-input__input" id="${field.id}" name="${field.id}" type="file" ${reqAttr} onchange="storeCanvasValue('${field.id}', this.value)">
+                                    </div>
+                                </div>`;
+                            break;
+                        case 'radio':
+                            (field.options || ["Default Profile Option"]).forEach((opt, oIdx) => {
+                                const isChecked = storedVal === opt ? 'checked' : '';
+                                fieldInputMarkup += `
+                                    <div class="usa-radio">
+                                        <input class="usa-radio__input" id="${field.id}-${oIdx}" type="radio" name="${field.id}" value="${opt}" ${isChecked} onchange="storeCanvasValue('${field.id}', this.value)">
+                                        <label class="usa-radio__label" for="${field.id}-${oIdx}">${opt}</label>
+                                    </div>`;
+                            });
+                            break;
+                        case 'checkbox':
+                            const checkedArray = Array.isArray(storedVal) ? storedVal : [];
+                            (field.options || ["Default Affirmation"]).forEach((opt, oIdx) => {
+                                const isChecked = checkedArray.includes(opt) ? 'checked' : '';
+                                fieldInputMarkup += `
+                                    <div class="usa-checkbox">
+                                        <input class="usa-checkbox__input" id="${field.id}-${oIdx}" type="checkbox" name="${field.id}" value="${opt}" ${isChecked} onchange="storeArrayCanvasValues('${field.id}', this.value, this.checked)">
+                                        <label class="usa-checkbox__label" for="${field.id}-${oIdx}">${opt}</label>
+                                    </div>`;
+                            });
+                            break;
+                    }
+
+                    const inputContainer = document.createElement('div');
+                    inputContainer.innerHTML = fieldInputMarkup;
+                    formGroup.appendChild(inputContainer);
+                    fieldsetElement.appendChild(formGroup);
+                });
+                
+                formContainer.appendChild(fieldsetElement);
+            });
+
+            container.appendChild(formContainer);
+        }
+
+        function renderReviewCanvas(step, container) {
+            container.insertAdjacentHTML('beforeend', `<p class="usa-prose font-sans-sm text-neutral-dark margin-bottom-3">${step.description || 'Review configurations generated sequentially.'}</p>`);
+
+            formSchema.steps.forEach(st => {
+                if(st.type === 'question' && st.groups) {
+                    st.groups.forEach(g => {
+                        if (g.fields && g.fields.length > 0) {
+                            let stepCardMarkup = `
+                                <div class="usa-card__container border-1px border-neutral-light margin-bottom-2 radius-md overflow-hidden shadow-1">
+                                    <header class="padding-x-2 padding-y-1 bg-neutral-lightest border-bottom-1px border-neutral-light display-flex flex-justify flex-align-center">
+                                        <h3 class="font-sans-xs text-bold margin-0 text-primary-dark">${st.title} &rarr; <span class="text-neutral">${g.legend}</span></h3>
+                                    </header>
+                                    <div class="padding-2 font-sans-3xs grid-row grid-gap-2">
+                            `;
+
+                            g.fields.forEach(f => {
+                                let renderVal = f.value;
+                                if(Array.isArray(renderVal)) renderVal = renderVal.join(', ');
+                                if(!renderVal) renderVal = '<span class="text-neutral-light text-italic">[ Left Unanswered / Empty ]</span>';
+                                
+                                stepCardMarkup += `
+                                    <div class="grid-col-12 border-bottom-1px border-neutral-lightest padding-y-1">
+                                        <div class="text-semibold text-neutral-dark font-sans-2xs">${f.label}</div>
+                                        <div class="text-neutral margin-top-05 bg-neutral-lightest padding-1 radius-sm font-sans-3xs">${renderVal}</div>
+                                    </div>
+                                `;
+                            });
+
+                            stepCardMarkup += `</div></div>`;
+                            container.insertAdjacentHTML('beforeend', stepCardMarkup);
+                        }
+                    });
+                }
+            });
+        }
+
+        function renderSuccessCanvas(step, container) {
+            const html = `
+                <div class="usa-alert usa-alert--success margin-bottom-3">
+                    <div class="usa-alert__body">
+                        <h4 class="usa-alert__heading">Submission Processing Confirmed</h4>
+                        <p class="usa-alert__text">${step.description || 'Operation success context structural output.'}</p>
+                    </div>
+                </div>
+                ${step.calloutText ? `<div class="usa-summary-box margin-bottom-3" role="region" aria-labelledby="summary-box-key-id"><div class="usa-summary-box__body"><h5 class="usa-summary-box__heading" id="summary-box-key-id">Next System Operations</h5><div class="usa-summary-box__text">${step.calloutText}</div></div></div>` : ''}
+                
+                <div class="margin-top-4 padding-top-2 border-top-1px border-neutral-light text-right">
+                    <button type="button" class="usa-button usa-button--primary" onclick="routeToLandingPage('submitted')">Return to Account Home</button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        function renderCanvasNavigation(container) {
+            const totalSteps = formSchema.steps.length;
+            const currentStep = formSchema.steps[currentStepIndex];
+            
+            if (currentStep.type === 'success') return;
+
+            let btnLabel = "Continue";
+            if(currentStep.type === 'intro') btnLabel = currentStep.buttonText || "Get Started";
+            if(currentStep.type === 'review') btnLabel = "Submit Application";
+
+            let saveExitHTML = currentStep.showSaveExit ? `<button type="button" class="usa-button usa-button--unstyled margin-x-2 font-sans-2xs text-bold" onclick="routeToLandingPage('draft')">Save and exit</button>` : '';
+
+            const navHTML = `
+                <div class="display-flex flex-justify flex-align-center margin-top-4 border-top-1px border-neutral-light padding-top-2">
+                    <div>
+                        <button type="button" class="usa-button usa-button--outline" onclick="navigateToStep(${currentStepIndex - 1})" ${currentStepIndex === 0 ? 'disabled' : ''}>Back</button>
+                    </div>
+                    <div class="display-flex flex-align-center">
+                        ${saveExitHTML}
+                        <button type="button" class="usa-button" onclick="navigateToStep(${currentStepIndex + 1})">${btnLabel}</button>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', navHTML);
+        }
+
+        function renderInspector() {
+            const formPanel = document.getElementById('inspector-content-form');
+            const emptyPanel = document.getElementById('inspector-empty-state');
+            
+            if(!selectedEntity.id || canvasViewMode === "landing") {
+                formPanel.style.display = 'none';
+                emptyPanel.style.display = 'block';
+                return;
+            }
+
+            formPanel.style.display = 'block';
+            emptyPanel.style.display = 'none';
+            formPanel.innerHTML = '';
+
+            if(selectedEntity.type === 'step') {
+                const step = formSchema.steps.find(s => s.id === selectedEntity.id);
+                if(!step) return;
+
+                let html = `
+                    <h3 class="font-sans-xs text-bold border-bottom-1px border-neutral padding-bottom-1 margin-top-0">Step Inspector</h3>
+                    <div class="margin-bottom-2">
+                        <label class="usa-label font-sans-3xs" for="ins-step-title">Step Title Bar Display</label>
+                        <input class="usa-input usa-input--small" id="ins-step-title" type="text" value="${step.title || ''}" oninput="updateActiveStepProp('title', this.value)">
+                    </div>
+                `;
+
+                if(['intro', 'review', 'success', 'question'].includes(step.type)) {
+                    if(step.type !== 'question') {
+                        html += `
+                            <div class="margin-bottom-2">
+                                <label class="usa-label font-sans-3xs" for="ins-step-desc">Section Descriptive Copy</label>
+                                <textarea class="usa-textarea usa-input--small" id="ins-step-desc" oninput="updateActiveStepProp('description', this.value)">${step.description || ''}</textarea>
+                            </div>
+                        `;
+                    }
+                }
+                if(step.type === 'intro') {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-3xs" for="ins-step-btn">Action Button Text</label>
+                            <input class="usa-input usa-input--small" id="ins-step-btn" type="text" value="${step.buttonText || ''}" oninput="updateActiveStepProp('buttonText', this.value)">
+                        </div>
+                    `;
+                }
+                if(step.type === 'success') {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-3xs" for="ins-step-callout">Callout Summary Text</label>
+                            <textarea class="usa-textarea usa-input--small" id="ins-step-callout" oninput="updateActiveStepProp('calloutText', this.value)">${step.calloutText || ''}</textarea>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <div class="usa-checkbox margin-top-2 border-top-1px border-neutral-light padding-top-2">
+                        <input class="usa-checkbox__input" id="ins-step-save-exit" type="checkbox" name="ins-step-save-exit" ${step.showSaveExit ? 'checked' : ''} onchange="updateActiveStepProp('showSaveExit', this.checked)">
+                        <label class="usa-checkbox__label font-sans-3xs text-bold" for="ins-step-save-exit">Include 'Save and Exit' Action Button</label>
+                    </div>
+                `;
+                formPanel.innerHTML = html;
+
+            } else if (selectedEntity.type === 'group') {
+                const currentStep = formSchema.steps[currentStepIndex];
+                const group = currentStep.groups.find(g => g.id === selectedEntity.id);
+                if(!group) return;
+
+                let html = `
+                    <h3 class="font-sans-xs text-bold border-bottom-1px border-neutral padding-bottom-1 margin-top-0">Group Cluster Inspector</h3>
+                    <div class="margin-bottom-2">
+                        <label class="usa-label font-sans-3xs" for="ins-group-legend">USWDS Legend Cluster Title</label>
+                        <input class="usa-input usa-input--small" id="ins-group-legend" type="text" value="${group.legend || ''}" oninput="updateActiveGroupLegend(this.value)">
+                    </div>
+                `;
+                formPanel.innerHTML = html;
+
+            } else if (selectedEntity.type === 'field') {
+                const currentStep = formSchema.steps[currentStepIndex];
+                const group = currentStep.groups.find(g => g.id === selectedEntity.groupId);
+                if(!group) return;
+                const field = group.fields.find(f => f.id === selectedEntity.id);
+                if(!field) return;
+
+                let html = `
+                    <h3 class="font-sans-xs text-bold border-bottom-1px border-neutral padding-bottom-1 margin-top-0">Field Input Inspector</h3>
+                    <div class="margin-bottom-2">
+                        <span class="font-sans-3xs text-neutral text-bold">ID MAPPING TOKEN:</span>
+                        <code class="display-block bg-neutral-light padding-05 text-bold radius-sm font-sans-3xs margin-top-05">${field.id}</code>
+                    </div>
+                    <div class="margin-bottom-2">
+                        <label class="usa-label font-sans-3xs" for="ins-field-label">Component Label Text</label>
+                        <input class="usa-input usa-input--small" id="ins-field-label" type="text" value="${field.label || ''}" oninput="updateActiveFieldProp('label', this.value)">
+                    </div>
+                    <div class="margin-bottom-2">
+                        <label class="usa-label font-sans-3xs" for="ins-field-hint">USWDS Instructional Hint Copy</label>
+                        <textarea class="usa-textarea usa-input--small" id="ins-field-hint" oninput="updateActiveFieldProp('hintText', this.value)">${field.hintText || ''}</textarea>
+                    </div>
+                    <div class="margin-bottom-2">
+                        <label class="usa-label font-sans-3xs" for="ins-field-err">Contextual Validation Error Message</label>
+                        <textarea class="usa-textarea usa-input--small" id="ins-field-err" oninput="updateActiveFieldProp('errorMessage', this.value)">${field.errorMessage || ''}</textarea>
+                    </div>
+                `;
+
+                if(['text', 'textarea'].includes(field.type)) {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-3xs" for="ins-field-place">Placeholder Text</label>
+                            <input class="usa-input usa-input--small" id="ins-field-place" type="text" value="${field.placeholder || ''}" oninput="updateActiveFieldProp('placeholder', this.value)">
+                        </div>
+                    `;
+                }
+
+                if(['radio', 'checkbox', 'dropdown'].includes(field.type)) {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-3xs" for="ins-field-opts">Options (Comma-Separated)</label>
+                            <textarea class="usa-textarea usa-input--small" id="ins-field-opts" oninput="updateActiveFieldOptions(this.value)">${(field.options || []).join(', ')}</textarea>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <div class="usa-checkbox margin-top-2">
+                        <input class="usa-checkbox__input" id="ins-field-req" type="checkbox" name="ins-field-req" ${field.required ? 'checked' : ''} onchange="updateActiveFieldProp('required', this.checked)">
+                        <label class="usa-checkbox__label font-sans-3xs text-bold" for="ins-field-req">Mandatory Validation Rule</label>
+                    </div>
+                    <button type="button" class="usa-button usa-button--error usa-button--unstyled margin-top-3 font-sans-3xs" onclick="deleteActiveField()">🗑️ Remove Component Field</button>
+                `;
+
+                formPanel.innerHTML = html;
+            }
+        }
+
+        function updateActiveStepProp(prop, val) {
+            const step = formSchema.steps.find(s => s.id === selectedEntity.id);
+            if(step) {
+                step[prop] = val;
+                renderCanvas();
+                if(prop === 'title') renderTreePanels();
+            }
+        }
+
+        function updateActiveGroupLegend(val) {
+            const currentStep = formSchema.steps[currentStepIndex];
+            const group = currentStep.groups.find(g => g.id === selectedEntity.id);
+            if (group) {
+                group.legend = val;
+                renderCanvas();
+                renderTreePanels();
+            }
+        }
+
+        function updateActiveFieldProp(prop, val) {
+            const currentStep = formSchema.steps[currentStepIndex];
+            const group = currentStep.groups.find(g => g.id === selectedEntity.groupId);
+            if(!group) return;
+            const field = group.fields.find(f => f.id === selectedEntity.id);
+            if(field) {
+                field[prop] = val;
+                renderCanvas();
+            }
+        }
+
+        function updateActiveFieldOptions(val) {
+            const currentStep = formSchema.steps[currentStepIndex];
+            const group = currentStep.groups.find(g => g.id === selectedEntity.groupId);
+            if(!group) return;
+            const field = group.fields.find(f => f.id === selectedEntity.id);
+            if(field) {
+                field.options = val.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                renderCanvas();
+            }
+        }
+
+        function addNewField(groupId, type) {
+            if(!type) return;
+            const currentStep = formSchema.steps[currentStepIndex];
+            const group = currentStep.groups.find(g => g.id === groupId);
+            if(!group) return;
+
+            const newId = `field_${Date.now().toString().slice(-4)}`;
+            const newField = {
+                id: newId,
+                type: type,
+                label: `Untitled ${type.toUpperCase()}`,
+                hintText: "",
+                required: false,
+                errorMessage: "Field processing execution failed.",
+                options: ['Option Alpha', 'Option Beta'],
+                value: ""
+            };
+
+            group.fields.push(newField);
+            selectedEntity = { type: 'field', id: newId, groupId: groupId };
+            renderWorkspaceState();
+        }
+
+        function deleteActiveField() {
+            const currentStep = formSchema.steps[currentStepIndex];
+            const group = currentStep.groups.find(g => g.id === selectedEntity.groupId);
+            if(!group) return;
+            
+            group.fields = group.fields.filter(f => f.id !== selectedEntity.id);
+            selectedEntity = { type: 'step', id: currentStep.id, groupId: null };
+            renderWorkspaceState();
+        }
+
+        function exportSchemaJson() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(formSchema, null, 4));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            const standardizedFileName = formSchema.formTitle.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+            downloadAnchorNode.setAttribute("download", `${standardizedFileName || 'uswds-schema'}-prototype.json`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function triggerJsonImport() {
+            document.getElementById('jsonFileInput').click();
+        }
+
+        function handleJsonImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsedJson = JSON.parse(e.target.result);
+                    if (parsedJson.formTitle && Array.isArray(parsedJson.steps)) {
+                        formSchema = parsedJson;
+                        currentStepIndex = 0;
+                        canvasViewMode = "form";
+                        formSubmissionState = "draft";
+                        selectedEntity = { type: 'step', id: formSchema.steps[0].id, groupId: null };
+                        document.getElementById('app-site-title').value = formSchema.siteTitle || "";
+                        document.getElementById('app-form-title').value = formSchema.formTitle;
+                        renderWorkspaceState();
+                    } else {
+                        alert("Malformed Configuration Target: Schema missing valid root layout attributes.");
+                    }
+                } catch (err) {
+                    alert("JSON Parse Verification Interruption.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; 
+        }
+
+        // =========================================================================
+        // CLIENT-SIDE INTERACTIVE FILLABLE PDF GENERATION ENGINE
+        // =========================================================================
+        async function generateFillablePdf() {
+            if (typeof PDFLib === 'undefined') {
+                alert("PDF Library compiling... Please try again in a moment.");
+                return;
+            }
+
+            try {
+                const { PDFDocument, rgb, StandardFonts } = PDFLib;
+                const pdfDoc = await PDFDocument.create();
+                
+                const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+                const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+                const fontOblique = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+                const pdfForm = pdfDoc.getForm();
+
+                const primaryColor = rgb(0.0, 0.37, 0.64); // USWDS #005ea2
+                const darkColor = rgb(0.1, 0.1, 0.1);
+                const grayColor = rgb(0.4, 0.4, 0.4);
+
+                let page = pdfDoc.addPage([612, 792]); // Standard US Letter Size
+                let y = 742;
+
+                function checkPageBreak(neededSpace = 40) {
+                    if (y - neededSpace < 50) {
+                        page = pdfDoc.addPage([612, 792]);
+                        y = 742;
+                        drawPdfHeader();
+                    }
+                }
+
+                function drawPdfHeader() {
+                    // Draw USWDS Style Header Bar
+                    page.drawRectangle({
+                        x: 40,
+                        y: y - 24,
+                        width: 532,
+                        height: 28,
+                        color: primaryColor,
+                    });
+                    page.drawText((formSchema.siteTitle || "GOVERNMENT PORTAL").toUpperCase(), {
+                        x: 50,
+                        y: y - 16,
+                        size: 10,
+                        font: fontBold,
+                        color: rgb(1, 1, 1),
+                    });
+                    y -= 42;
+                }
+
+                drawPdfHeader();
+
+                // Document Form Title
+                page.drawText(formSchema.formTitle || "Official Application Form", {
+                    x: 40,
+                    y: y,
+                    size: 16,
+                    font: fontBold,
+                    color: darkColor,
+                });
+                y -= 22;
+
+                page.drawLine({
+                    start: { x: 40, y: y },
+                    end: { x: 572, y: y },
+                    thickness: 1,
+                    color: rgb(0.8, 0.8, 0.8),
+                });
+                y -= 20;
+
+                let fieldCounter = 1;
+
+                for (let sIdx = 0; sIdx < formSchema.steps.length; sIdx++) {
+                    const step = formSchema.steps[sIdx];
+                    if (step.type === 'intro' || step.type === 'success') continue;
+
+                    checkPageBreak(50);
+
+                    // Step Header Block
+                    page.drawText(`STEP ${sIdx + 1}: ${step.title.toUpperCase()}`, {
+                        x: 40,
+                        y: y,
+                        size: 11,
+                        font: fontBold,
+                        color: primaryColor,
+                    });
+                    y -= 18;
+
+                    if (step.description) {
+                        page.drawText(step.description, {
+                            x: 40,
+                            y: y,
+                            size: 8.5,
+                            font: fontOblique,
+                            color: grayColor,
+                            maxWidth: 532
+                        });
+                        y -= 18;
+                    }
+
+                    if (step.groups && step.groups.length > 0) {
+                        for (const group of step.groups) {
+                            checkPageBreak(40);
+
+                            if (group.legend) {
+                                page.drawText(group.legend, {
+                                    x: 45,
+                                    y: y,
+                                    size: 9.5,
+                                    font: fontBold,
+                                    color: darkColor,
+                                });
+                                y -= 16;
+                            }
+
+                            for (const field of group.fields) {
+                                checkPageBreak(50);
+
+                                const labelText = `${field.label}${field.required ? ' *' : ''}`;
+                                page.drawText(labelText, {
+                                    x: 50,
+                                    y: y,
+                                    size: 8.5,
+                                    font: fontBold,
+                                    color: darkColor,
+                                });
+                                y -= 12;
+
+                                if (field.hintText) {
+                                    page.drawText(field.hintText, {
+                                        x: 50,
+                                        y: y,
+                                        size: 7.5,
+                                        font: fontOblique,
+                                        color: grayColor,
+                                    });
+                                    y -= 12;
+                                }
+
+                                const fieldToken = `${field.id}_${fieldCounter++}`;
+
+                                // Real Interactive PDF Form Controls Generation Matrix
+                                if (field.type === 'text' || field.type === 'date') {
+                                    const pdfTxt = pdfForm.createTextField(fieldToken);
+                                    if (field.value) pdfTxt.setText(String(field.value));
+                                    pdfTxt.addToPage(page, { x: 50, y: y - 16, width: 280, height: 18 });
+                                    y -= 26;
+                                } else if (field.type === 'textarea') {
+                                    const pdfTxt = pdfForm.createTextField(fieldToken);
+                                    pdfTxt.enableMultiline();
+                                    if (field.value) pdfTxt.setText(String(field.value));
+                                    pdfTxt.addToPage(page, { x: 50, y: y - 40, width: 450, height: 42 });
+                                    y -= 50;
+                                } else if (field.type === 'dropdown') {
+                                    const pdfDrop = pdfForm.createDropdown(fieldToken);
+                                    const opts = (field.options && field.options.length > 0) ? field.options : ['Option 1'];
+                                    pdfDrop.addOptions(opts);
+                                    if (field.value && opts.includes(field.value)) {
+                                        pdfDrop.select(field.value);
+                                    }
+                                    pdfDrop.addToPage(page, { x: 50, y: y - 16, width: 250, height: 18 });
+                                    y -= 26;
+                                } else if (field.type === 'checkbox') {
+                                    const opts = field.options || ['Option 1'];
+                                    opts.forEach((opt, oIdx) => {
+                                        checkPageBreak(20);
+                                        const cbToken = `${fieldToken}_cb_${oIdx}`;
+                                        const pdfCb = pdfForm.createCheckBox(cbToken);
+                                        if (Array.isArray(field.value) && field.value.includes(opt)) {
+                                            pdfCb.check();
+                                        }
+                                        pdfCb.addToPage(page, { x: 50, y: y - 12, width: 12, height: 12 });
+                                        page.drawText(opt, { x: 68, y: y - 10, size: 8.5, font: font, color: darkColor });
+                                        y -= 18;
+                                    });
+                                    y -= 4;
+                                } else if (field.type === 'radio') {
+                                    const opts = field.options || ['Option 1'];
+                                    opts.forEach((opt, oIdx) => {
+                                        checkPageBreak(20);
+                                        const cbToken = `${fieldToken}_opt_${oIdx}`;
+                                        const pdfCb = pdfForm.createCheckBox(cbToken);
+                                        if (field.value === opt) pdfCb.check();
+                                        pdfCb.addToPage(page, { x: 50, y: y - 12, width: 12, height: 12 });
+                                        page.drawText(opt, { x: 68, y: y - 10, size: 8.5, font: font, color: darkColor });
+                                        y -= 18;
+                                    });
+                                    y -= 4;
+                                } else {
+                                    const pdfTxt = pdfForm.createTextField(fieldToken);
+                                    pdfTxt.addToPage(page, { x: 50, y: y - 16, width: 280, height: 18 });
+                                    y -= 26;
+                                }
+                            }
+                            y -= 8;
+                        }
+                    }
+                    y -= 12;
+                }
+
+                // Compile and stream output binary blob directly to client browser
+                const pdfBytes = await pdfDoc.save();
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                const fileName = (formSchema.formTitle || 'uswds-form').toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-') + '-fillable.pdf';
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+            } catch (err) {
+                alert("PDF Synthesis Interruption: Verify browser security privileges or schema definitions.");
+            }
+        }
+    </script>
+</body>
+</html>
