@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Builder Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: #1e293b;
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #334155;
+        }
+        .navbar h1 {
+            color: #f1f5f9;
+            font-size: 1.5rem;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: #1e293b;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid #334155;
+        }
+        .stat-card h3 {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #f1f5f9;
+        }
+        .filter-bar {
+            background: #1e293b;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            border: 1px solid #334155;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: #334155;
+            border: none;
+            border-radius: 0.5rem;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        .forms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        .form-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        .form-card.show {
+            display: block;
+        }
+        .form-card:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        }
+        .form-card-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+        }
+        .form-card-header.uswds {
+            background: linear-gradient(135deg, #005ea2 0%, #1a4480 100%);
+        }
+        .form-card-header.bootstrap {
+            background: linear-gradient(135deg, #7952b3 0%, #563d7c 100%);
+        }
+        .form-card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .form-card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        .form-card-filename {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.8);
+            font-family: 'Courier New', monospace;
+        }
+        .form-card-body {
+            padding: 1.5rem;
+        }
+        .form-card-description {
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            font-size: 0.875rem;
+        }
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            background: #334155;
+            border-radius: 1rem;
+            color: #94a3b8;
+        }
+        .tag.highlight {
+            background: #667eea;
+            color: white;
+        }
+        .form-card-footer {
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+        .btn {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+        .btn-secondary {
+            background: #334155;
+            color: #e2e8f0;
+        }
+        .btn-secondary:hover {
+            background: #475569;
+        }
+        .comparison-table {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+        .table-header {
+            padding: 1rem 1.5rem;
+            background: #334155;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+        th {
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+        td {
+            color: #e2e8f0;
+        }
+        .check { color: #4ade80; font-weight: bold; }
+        .cross { color: #f87171; }
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .forms-grid { grid-template-columns: 1fr; }
+            .filter-bar { flex-direction: column; align-items: stretch; }
+            table { font-size: 0.875rem; }
+            th, td { padding: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>📊 Form Builder Dashboard</h1>
+    </nav>
+    
+    <div class="container">
+        <!-- Stats Section -->
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Versions</h3>
+                <div class="value">3</div>
+            </div>
+            <div class="stat-card">
+                <h3>Design Systems</h3>
+                <div class="value">2</div>
+            </div>
+            <div class="stat-card">
+                <h3>Mobile Responsive</h3>
+                <div class="value">100%</div>
+            </div>
+            <div class="stat-card">
+                <h3>Features</h3>
+                <div class="value">15+</div>
+            </div>
+        </div>
+        
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <span style="color: #94a3b8; font-weight: 600;">Filter by:</span>
+            <button class="filter-btn active" onclick="filterForms('all')">All</button>
+            <button class="filter-btn" onclick="filterForms('uswds')">USWDS</button>
+            <button class="filter-btn" onclick="filterForms('bootstrap')">Bootstrap</button>
+            <button class="filter-btn" onclick="filterForms('enhanced')">Enhanced Nav</button>
+        </div>
+        
+        <!-- Forms Grid -->
+        <div class="forms-grid">
+            <!-- Form 1 -->
+            <div class="form-card show" data-tags="uswds basic">
+                <div class="form-card-header uswds">
+                    <div class="form-card-icon">🏛️</div>
+                    <div class="form-card-title">Original USWDS</div>
+                    <div class="form-card-filename">sample-form.html</div>
+                </div>
+                <div class="form-card-body">
+                    <div class="form-card-description">
+                        Foundation version using U.S. Web Design System with basic mobile responsiveness. Government-compliant styling.
+                    </div>
+                    <div class="tags">
+                        <span class="tag">USWDS 3.13</span>
+                        <span class="tag">Mobile Ready</span>
+                        <span class="tag">Basic Nav</span>
+                    </div>
+                </div>
+                <div class="form-card-footer">
+                    <a href="sample-form.html" class="btn btn-primary">Open Form</a>
+                    <a href="sample-form.html" target="_blank" class="btn btn-secondary">New Tab</a>
+                </div>
+            </div>
+            
+            <!-- Form 2 -->
+            <div class="form-card show" data-tags="uswds enhanced">
+                <div class="form-card-header uswds">
+                    <div class="form-card-icon">🧪</div>
+                    <div class="form-card-title">Enhanced Testing</div>
+                    <div class="form-card-filename">form-testing.html</div>
+                </div>
+                <div class="form-card-body">
+                    <div class="form-card-description">
+                        Advanced USWDS implementation with progress tracking, step indicators, breadcrumbs, and mobile drawer panels.
+                    </div>
+                    <div class="tags">
+                        <span class="tag">USWDS</span>
+                        <span class="tag highlight">Progress Bar</span>
+                        <span class="tag highlight">Step Nav</span>
+                        <span class="tag highlight">Mobile Drawers</span>
+                    </div>
+                </div>
+                <div class="form-card-footer">
+                    <a href="form-testing.html" class="btn btn-primary">Open Form</a>
+                    <a href="form-testing.html" target="_blank" class="btn btn-secondary">New Tab</a>
+                </div>
+            </div>
+            
+            <!-- Form 3 -->
+            <div class="form-card show" data-tags="bootstrap enhanced">
+                <div class="form-card-header bootstrap">
+                    <div class="form-card-icon">🚀</div>
+                    <div class="form-card-title">Bootstrap 5 ⭐</div>
+                    <div class="form-card-filename">form-bootstrap.html</div>
+                </div>
+                <div class="form-card-body">
+                    <div class="form-card-description">
+                        Modern professional implementation using Bootstrap 5. Most popular design system with extensive components.
+                    </div>
+                    <div class="tags">
+                        <span class="tag highlight">Bootstrap 5.3</span>
+                        <span class="tag highlight">1000+ Icons</span>
+                        <span class="tag">Modern Design</span>
+                        <span class="tag">Full Features</span>
+                    </div>
+                </div>
+                <div class="form-card-footer">
+                    <a href="form-bootstrap.html" class="btn btn-primary">Open Form</a>
+                    <a href="form-bootstrap.html" target="_blank" class="btn btn-secondary">New Tab</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comparison Table -->
+        <div class="comparison-table">
+            <div class="table-header">📋 Feature Comparison</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Original</th>
+                        <th>Testing</th>
+                        <th>Bootstrap</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Mobile Responsive</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Progress Bar</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Step Navigation</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Breadcrumbs</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Collapsible Panels</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Design System</td>
+                        <td>USWDS 3.13</td>
+                        <td>USWDS 3.13</td>
+                        <td>Bootstrap 5.3</td>
+                    </tr>
+                    <tr>
+                        <td>Icon Library</td>
+                        <td>Emoji</td>
+                        <td>Emoji</td>
+                        <td>Bootstrap Icons</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        function filterForms(filter) {
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Filter cards
+            const cards = document.querySelectorAll('.form-card');
+            cards.forEach(card => {
+                if (filter === 'all') {
+                    card.classList.add('show');
+                } else {
+                    const tags = card.getAttribute('data-tags');
+                    if (tags.includes(filter)) {
+                        card.classList.add('show');
+                    } else {
+                        card.classList.remove('show');
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
