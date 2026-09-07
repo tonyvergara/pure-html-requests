@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Builder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uswds/3.13.0/css/uswds.min.css">
+    <style>
+        body, html { height: 100%; margin: 0; overflow: hidden; }
+        .workspace-container { display: flex; height: calc(100vh - 120px); overflow: hidden; }
+        .panel-sidebar { width: 320px; background-color: #f0f4f9; border-right: 1px solid #c9d4e0; overflow-y: auto; }
+        .panel-canvas { flex: 1; background-color: #f9fafb; overflow-y: auto; padding: 2rem; position: relative; }
+        .panel-inspector { width: 360px; background-color: #f0f4f9; border-left: 1px solid #c9d4e0; overflow-y: auto; }
+        .tree-item { cursor: pointer; transition: all 0.15s ease; border-radius: 4px; }
+        .tree-item:hover { background-color: #dfe8f2; }
+        .tree-item.is-selected { background-color: #005ea2; color: white; font-weight: 600; }
+        .tree-item.is-selected .tree-icon { filter: brightness(0) invert(1); }
+        .tree-icon { display: inline-block; width: 20px; text-align: center; opacity: 0.8; }
+        .preview-mode-badge { position: absolute; top: 16px; right: 24px; z-index: 100; }
+        .hidden-file-input { display: none; }
+        .section-header { 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            color: #565c65;
+            margin-bottom: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        .section-header:first-child { margin-top: 0; }
+        .field-required-indicator { color: #d83933; font-weight: 700; }
+        .helper-text { font-size: 0.875rem; color: #565c65; line-height: 1.4; }
+        .usa-label { margin-top: 0.5rem; }
+        .canvas-card { background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <section class="usa-banner" aria-label="Official website of the United States government">
+        <div class="usa-banner__header">
+            <div class="usa-banner__inner">
+                <div class="grid-col-auto">
+                    <img class="usa-banner__header-flag" src="https://cdnjs.cloudflare.com/ajax/libs/uswds/3.13.0/img/usflag.png" alt="U.S. flag">
+                </div>
+                <div class="grid-col-fill tablet:grid-col-auto">
+                    <p class="usa-banner__header-text">An official website of the United States government</p>
+                    <p class="usa-banner__header-action" aria-hidden="true">Here's how you know</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <header class="usa-header usa-header--basic bg-primary-darker text-white padding-y-2">
+        <div class="grid-container maxw-widescreen display-flex flex-justify flex-align-center">
+            <div>
+                <h1 class="usa-logo__text font-sans-lg text-bold text-white margin-0">Form Builder</h1>
+                <p class="text-base-lighter font-sans-xs margin-0">Create and preview government forms</p>
+            </div>
+            <div class="display-flex gap-1 flex-align-center">
+                <button class="usa-button usa-button--accent-cool" onclick="triggerJsonImport()" aria-label="Upload a form template from JSON file">
+                    Upload JSON
+                </button>
+                <input type="file" id="jsonFileInput" class="hidden-file-input" accept=".json" onchange="handleJsonImport(event)">
+                <button class="usa-button usa-button--outline usa-button--inverse" onclick="exportSchemaJson()" aria-label="Download your form as JSON">
+                    Download JSON
+                </button>
+                <button id="errorToggleBtn" class="usa-button usa-button--secondary" onclick="toggleErrorPreview()" title="Toggle to see what your form looks like with validation errors">
+                    <span id="errorToggleBtnText">Preview: Normal</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="workspace-container">
+        
+        <aside class="panel-sidebar padding-2" role="complementary" aria-label="Form structure">
+            <div class="margin-bottom-3">
+                <label class="usa-label font-sans-xs" for="app-form-title">Form title</label>
+                <input class="usa-input" id="app-form-title" type="text" oninput="updateFormTitle(this.value)" aria-describedby="form-title-hint">
+                <span class="usa-hint font-sans-2xs" id="form-title-hint">This appears at the top of your form</span>
+            </div>
+
+            <div class="section-header">Pages</div>
+            
+            <ul class="usa-list usa-list--unstyled margin-bottom-2" id="pages-list-tree" role="tree" aria-label="Form pages">
+            </ul>
+
+            <div id="fields-tree-section" style="display:none;">
+                <div class="section-header">Fields on This Page</div>
+                <ul class="usa-list usa-list--unstyled margin-bottom-2" id="fields-list-tree" role="tree" aria-label="Form fields">
+                </ul>
+                <div class="margin-top-2">
+                    <label class="usa-label font-sans-xs" for="add-field-select">Add a field</label>
+                    <select class="usa-select" id="add-field-select" onchange="addNewField(this.value)" aria-describedby="add-field-hint">
+                        <option value="">- Select field type -</option>
+                        <option value="text">Text input</option>
+                        <option value="textarea">Text area</option>
+                        <option value="radio">Radio buttons</option>
+                        <option value="checkbox">Checkboxes</option>
+                        <option value="dropdown">Dropdown</option>
+                        <option value="date">Date picker</option>
+                        <option value="file">File upload</option>
+                    </select>
+                    <span class="usa-hint font-sans-2xs" id="add-field-hint">Choose what type of information to collect</span>
+                </div>
+            </div>
+        </aside>
+
+        <section class="panel-canvas" role="main" aria-label="Form preview">
+            <span class="usa-tag bg-base-light text-ink preview-mode-badge" id="canvas-badge">Live preview</span>
+            
+            <div class="grid-container maxw-tablet canvas-card padding-4" id="uswds-rendering-canvas">
+            </div>
+        </section>
+
+        <aside class="panel-inspector padding-2" role="complementary" aria-label="Properties editor">
+            <div id="inspector-empty-state" class="text-center padding-top-4">
+                <svg class="usa-icon text-base-light" aria-hidden="true" focusable="false" role="img" width="64" height="64">
+                    <use xlink:href="https://cdnjs.cloudflare.com/ajax/libs/uswds/3.13.0/img/sprite.svg#settings"></use>
+                </svg>
+                <p class="text-base font-sans-sm margin-top-2 line-height-sans-4">Select any page or form field to edit its properties</p>
+            </div>
+            <div id="inspector-content-form" style="display:none;">
+            </div>
+        </aside>
+
+    </main>
+
+    <footer class="usa-footer usa-footer--slim bg-base-lightest padding-y-2">
+        <div class="grid-container maxw-widescreen font-sans-2xs text-base display-flex flex-justify">
+            <div>Built with USWDS 3.13</div>
+            <div>Standards-compliant government forms</div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uswds/3.13.0/js/uswds.min.js"></script>
+
+    <script>
+        // Default example form demonstrating best practices
+        let formSchema = {
+            formTitle: "Federal Benefits Application",
+            steps: [
+                {
+                    id: "intro_step",
+                    title: "Before you start",
+                    type: "intro",
+                    description: "This form helps you apply for federal benefits. You'll need about 10 minutes to complete it. Make sure you have your Social Security number and proof of income ready.",
+                    buttonText: "Start application"
+                },
+                {
+                    id: "personal_info_step",
+                    title: "About you",
+                    type: "question",
+                    fields: [
+                        { 
+                            id: "full_name", 
+                            type: "text", 
+                            label: "Your full name", 
+                            hintText: "Enter your name as it appears on your ID", 
+                            required: true, 
+                            errorMessage: "Please enter your name", 
+                            placeholder: "Jane Smith" 
+                        },
+                        { 
+                            id: "email", 
+                            type: "text", 
+                            label: "Email address", 
+                            hintText: "We'll send confirmation to this address", 
+                            required: true, 
+                            errorMessage: "Please enter a valid email address", 
+                            placeholder: "name@example.com" 
+                        },
+                        { 
+                            id: "about_you", 
+                            type: "textarea", 
+                            label: "Why are you applying?", 
+                            hintText: "Tell us about your situation in a few sentences", 
+                            required: false, 
+                            errorMessage: "Please tell us why you're applying", 
+                            placeholder: "I'm applying because..." 
+                        }
+                    ]
+                },
+                {
+                    id: "eligibility_step",
+                    title: "Eligibility",
+                    type: "question",
+                    fields: [
+                        { 
+                            id: "citizenship", 
+                            type: "radio", 
+                            label: "Citizenship status", 
+                            hintText: "Choose the option that describes you", 
+                            required: true, 
+                            errorMessage: "Please select your citizenship status", 
+                            options: ["U.S. citizen", "Permanent resident", "Work visa holder"] 
+                        },
+                        { 
+                            id: "department", 
+                            type: "dropdown", 
+                            label: "Which department?", 
+                            hintText: "Choose the department that handles your benefit type", 
+                            required: true, 
+                            errorMessage: "Please select a department", 
+                            options: ["Department of Agriculture", "Department of Commerce", "Department of Energy", "Social Security Administration"] 
+                        },
+                        { 
+                            id: "start_date", 
+                            type: "date", 
+                            label: "When would you like coverage to start?", 
+                            hintText: "Choose a date at least 30 days from today", 
+                            required: true, 
+                            errorMessage: "Please enter a valid date" 
+                        }
+                    ]
+                },
+                {
+                    id: "documents_step",
+                    title: "Documents",
+                    type: "question",
+                    fields: [
+                        { 
+                            id: "proof_of_income", 
+                            type: "file", 
+                            label: "Upload proof of income", 
+                            hintText: "Upload a PDF of your most recent pay stub or tax return", 
+                            required: false, 
+                            errorMessage: "We couldn't read that file. Please try a different PDF" 
+                        },
+                        { 
+                            id: "acknowledgments", 
+                            type: "checkbox", 
+                            label: "Confirm the following", 
+                            hintText: "You must agree to both items to continue", 
+                            required: true, 
+                            errorMessage: "Please check all required boxes", 
+                            options: [
+                                "I confirm that the information I provided is accurate",
+                                "I understand this application will be reviewed by federal staff"
+                            ] 
+                        }
+                    ]
+                },
+                {
+                    id: "review_step",
+                    title: "Review your application",
+                    type: "review",
+                    description: "Please review the information below before submitting. You can go back to make changes if needed."
+                },
+                {
+                    id: "success_step",
+                    title: "Application submitted!",
+                    type: "success",
+                    description: "We've received your application and you'll get a confirmation email shortly.",
+                    calloutText: "We'll review your application within 3 business days. You can check your status anytime using confirmation number #BEN-2024-8472."
+                }
+            ]
+        };
+
+        let currentStepIndex = 0;
+        let selectedEntity = { type: 'step', id: 'intro_step' };
+        let showErrorPreview = false;
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('app-form-title').value = formSchema.formTitle;
+            renderWorkspace();
+        });
+
+        function toggleErrorPreview() {
+            showErrorPreview = !showErrorPreview;
+            const btn = document.getElementById('errorToggleBtn');
+            const btnText = document.getElementById('errorToggleBtnText');
+            const badge = document.getElementById('canvas-badge');
+            
+            if(showErrorPreview) {
+                btn.classList.remove('usa-button--secondary');
+                btn.classList.add('usa-button--secondary', 'bg-error-dark');
+                btnText.innerText = "Preview: With errors";
+                badge.innerText = "Showing error examples";
+                badge.className = "usa-tag bg-error text-white preview-mode-badge";
+            } else {
+                btn.classList.remove('bg-error-dark');
+                btn.classList.add('usa-button--secondary');
+                btnText.innerText = "Preview: Normal";
+                badge.innerText = "Live preview";
+                badge.className = "usa-tag bg-base-light text-ink preview-mode-badge";
+            }
+            renderCanvas();
+        }
+
+        function updateFormTitle(val) {
+            formSchema.formTitle = val;
+            renderCanvas();
+        }
+
+        function navigateToStep(idx) {
+            currentStepIndex = idx;
+            selectedEntity = { type: 'step', id: formSchema.steps[idx].id };
+            renderWorkspace();
+        }
+
+        function selectFieldEntity(fieldId) {
+            selectedEntity = { type: 'field', id: fieldId };
+            renderWorkspace();
+        }
+
+        function renderWorkspace() {
+            renderTreePanels();
+            renderCanvas();
+            renderInspector();
+            
+            // Re-initialize USWDS components after DOM updates
+            if(window.USWDS && typeof window.USWDS.init === 'function') {
+                window.USWDS.init();
+            }
+        }
+
+        // Render sidebar navigation trees
+        function renderTreePanels() {
+            const pagesTree = document.getElementById('pages-list-tree');
+            pagesTree.innerHTML = '';
+            
+            formSchema.steps.forEach((step, idx) => {
+                const isSelected = (selectedEntity.type === 'step' && selectedEntity.id === step.id);
+                const li = document.createElement('li');
+                li.className = `tree-item padding-105 margin-y-05 font-sans-xs display-flex flex-align-center ${isSelected ? 'is-selected' : 'text-ink'}`;
+                li.onclick = (e) => { e.stopPropagation(); navigateToStep(idx); };
+                li.setAttribute('role', 'treeitem');
+                li.setAttribute('tabindex', isSelected ? '0' : '-1');
+                
+                let iconChar = "📄";
+                if(step.type === 'intro') iconChar = "🏁";
+                if(step.type === 'review') iconChar = "👁";
+                if(step.type === 'success') iconChar = "✓";
+                
+                li.innerHTML = `<span class="tree-icon" aria-hidden="true">${iconChar}</span> <span>${step.title}</span>`;
+                pagesTree.appendChild(li);
+            });
+
+            const currentStep = formSchema.steps[currentStepIndex];
+            const fieldsTreeSection = document.getElementById('fields-tree-section');
+            const fieldsTree = document.getElementById('fields-list-tree');
+            fieldsTree.innerHTML = '';
+
+            if (currentStep.type === 'question') {
+                fieldsTreeSection.style.display = 'block';
+                currentStep.fields.forEach(f => {
+                    const isSelected = (selectedEntity.type === 'field' && selectedEntity.id === f.id);
+                    const li = document.createElement('li');
+                    li.className = `tree-item padding-105 margin-y-05 font-sans-xs display-flex flex-align-center ${isSelected ? 'is-selected' : 'text-ink'}`;
+                    li.onclick = (e) => { e.stopPropagation(); selectFieldEntity(f.id); };
+                    li.setAttribute('role', 'treeitem');
+                    li.setAttribute('tabindex', isSelected ? '0' : '-1');
+                    
+                    const typeIcon = {
+                        'text': '📝',
+                        'textarea': '📄',
+                        'radio': '⭕',
+                        'checkbox': '☑️',
+                        'dropdown': '▼',
+                        'date': '📅',
+                        'file': '📎'
+                    }[f.type] || '⚙️';
+                    
+                    const requiredMark = f.required ? '<span class="field-required-indicator">*</span>' : '';
+                    
+                    li.innerHTML = `<span class="tree-icon" aria-hidden="true">${typeIcon}</span> <span class="flex-fill text-truncate">${f.label}${requiredMark}</span>`;
+                    fieldsTree.appendChild(li);
+                });
+            } else {
+                fieldsTreeSection.style.display = 'none';
+            }
+        }
+
+        // Render the live form preview
+        function renderCanvas() {
+            const canvas = document.getElementById('uswds-rendering-canvas');
+            canvas.innerHTML = '';
+
+            const step = formSchema.steps[currentStepIndex];
+
+            // Form header
+            const formHeaderHTML = `
+                <div class="border-bottom-2px border-base-light padding-bottom-2 margin-bottom-3">
+                    <span class="text-primary text-semibold font-sans-xs text-uppercase">${formSchema.formTitle}</span>
+                    <h1 class="usa-prose-h1 margin-top-1 margin-bottom-0">${step.title}</h1>
+                </div>
+            `;
+            canvas.insertAdjacentHTML('beforeend', formHeaderHTML);
+
+            // Error banner if preview mode is active
+            if(showErrorPreview && step.type === 'question') {
+                const errorBannerHTML = `
+                    <div class="usa-alert usa-alert--error margin-bottom-3" role="alert">
+                        <div class="usa-alert__body">
+                            <h2 class="usa-alert__heading">There are errors on this page</h2>
+                            <p class="usa-alert__text">Please review the highlighted fields below and fix any errors before continuing.</p>
+                        </div>
+                    </div>
+                `;
+                canvas.insertAdjacentHTML('beforeend', errorBannerHTML);
+            }
+
+            // Render appropriate step type
+            if(step.type === 'intro') {
+                renderIntroCanvas(step, canvas);
+            } else if(step.type === 'question') {
+                renderQuestionCanvas(step, canvas);
+            } else if(step.type === 'review') {
+                renderReviewCanvas(step, canvas);
+            } else if(step.type === 'success') {
+                renderSuccessCanvas(step, canvas);
+            }
+
+            // Navigation footer
+            renderCanvasNavigation(canvas);
+        }
+
+        function renderIntroCanvas(step, canvas) {
+            const html = `
+                <div class="usa-prose">
+                    <p class="usa-intro">${step.description || 'Welcome to this form.'}</p>
+                </div>
+            `;
+            canvas.insertAdjacentHTML('beforeend', html);
+        }
+
+        function renderQuestionCanvas(step, canvas) {
+            const formContainer = document.createElement('form');
+            formContainer.className = "usa-form usa-form--large";
+            formContainer.onsubmit = (e) => e.preventDefault();
+
+            step.fields.forEach(field => {
+                const formGroup = document.createElement('div');
+                formGroup.className = `usa-form-group ${showErrorPreview && field.required ? 'usa-form-group--error' : ''}`;
+                
+                const reqAttr = field.required ? 'required aria-required="true"' : '';
+                const reqIndicator = field.required ? ' <abbr title="required" class="usa-hint usa-hint--required">*</abbr>' : '';
+                
+                let labelHTML = `<label class="usa-label ${showErrorPreview && field.required ? 'usa-label--error' : ''}" for="${field.id}">${field.label}${reqIndicator}</label>`;
+                let hintHTML = field.hintText ? `<div class="usa-hint" id="${field.id}-hint">${field.hintText}</div>` : '';
+                let errorHTML = (showErrorPreview && field.required) ? `<span class="usa-error-message" id="${field.id}-error-message" role="alert">${field.errorMessage || 'This field is required'}</span>` : '';
+                
+                formGroup.insertAdjacentHTML('beforeend', labelHTML);
+                formGroup.insertAdjacentHTML('beforeend', hintHTML);
+                formGroup.insertAdjacentHTML('beforeend', errorHTML);
+
+                let fieldInputMarkup = '';
+                const errInputClass = (showErrorPreview && field.required) ? 'usa-input--error' : '';
+                const ariaDescribedBy = [
+                    field.hintText ? `${field.id}-hint` : '',
+                    showErrorPreview && field.required ? `${field.id}-error-message` : ''
+                ].filter(Boolean).join(' ');
+
+                switch (field.type) {
+                    case 'text':
+                        fieldInputMarkup = `<input class="usa-input ${errInputClass}" id="${field.id}" name="${field.id}" type="text" placeholder="${field.placeholder || ''}" ${reqAttr} aria-describedby="${ariaDescribedBy}">`;
+                        break;
+                    case 'textarea':
+                        fieldInputMarkup = `<textarea class="usa-textarea ${errInputClass}" id="${field.id}" name="${field.id}" placeholder="${field.placeholder || ''}" ${reqAttr} aria-describedby="${ariaDescribedBy}"></textarea>`;
+                        break;
+                    case 'dropdown':
+                        let optionsHTML = (field.options || []).map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                        fieldInputMarkup = `<select class="usa-select ${errInputClass}" id="${field.id}" name="${field.id}" ${reqAttr} aria-describedby="${ariaDescribedBy}"><option value="">- Select -</option>${optionsHTML}</select>`;
+                        break;
+                    case 'date':
+                        fieldInputMarkup = `
+                            <div class="usa-date-picker" data-name="${field.id}">
+                                <input class="usa-input ${errInputClass}" id="${field.id}" name="${field.id}" type="text" ${reqAttr} aria-describedby="${ariaDescribedBy}">
+                            </div>`;
+                        break;
+                    case 'file':
+                        fieldInputMarkup = `
+                            <div class="usa-file-input">
+                                <div class="usa-file-input__target">
+                                    <input class="usa-file-input__input" id="${field.id}" name="${field.id}" type="file" ${reqAttr} aria-describedby="${ariaDescribedBy}">
+                                </div>
+                            </div>`;
+                        break;
+                    case 'radio':
+                        const radioFieldset = document.createElement('fieldset');
+                        radioFieldset.className = `usa-fieldset ${showErrorPreview && field.required ? 'usa-fieldset--error' : ''}`;
+                        (field.options || ["Option 1"]).forEach((opt, oIdx) => {
+                            fieldInputMarkup += `
+                                <div class="usa-radio">
+                                    <input class="usa-radio__input ${errInputClass}" id="${field.id}-${oIdx}" type="radio" name="${field.id}" value="${opt}" ${reqAttr}>
+                                    <label class="usa-radio__label" for="${field.id}-${oIdx}">${opt}</label>
+                                </div>`;
+                        });
+                        break;
+                    case 'checkbox':
+                        (field.options || ["Option 1"]).forEach((opt, oIdx) => {
+                            fieldInputMarkup += `
+                                <div class="usa-checkbox">
+                                    <input class="usa-checkbox__input ${errInputClass}" id="${field.id}-${oIdx}" type="checkbox" name="${field.id}" value="${opt}" ${reqAttr}>
+                                    <label class="usa-checkbox__label" for="${field.id}-${oIdx}">${opt}</label>
+                                </div>`;
+                        });
+                        break;
+                }
+
+                const inputContainer = document.createElement('div');
+                inputContainer.innerHTML = fieldInputMarkup;
+                formGroup.appendChild(inputContainer);
+                formContainer.appendChild(formGroup);
+            });
+
+            canvas.appendChild(formContainer);
+        }
+
+        function renderReviewCanvas(step, canvas) {
+            canvas.insertAdjacentHTML('beforeend', `<p class="usa-prose margin-bottom-3">${step.description || 'Review your information before submitting.'}</p>`);
+
+            formSchema.steps.forEach(st => {
+                if(st.type === 'question' && st.fields && st.fields.length > 0) {
+                    let stepCardMarkup = `
+                        <div class="usa-card__container border-base-light margin-bottom-2 radius-md overflow-hidden">
+                            <header class="padding-2 bg-base-lightest border-bottom-1px border-base-light">
+                                <h2 class="font-sans-sm text-bold margin-0">${st.title}</h2>
+                            </header>
+                            <div class="padding-2">
+                    `;
+
+                    st.fields.forEach(f => {
+                        stepCardMarkup += `
+                            <div class="padding-y-1 border-bottom-1px border-base-lighter">
+                                <dt class="text-bold font-sans-xs text-base-dark">${f.label}</dt>
+                                <dd class="text-base font-sans-xs margin-top-05 text-italic">[Your answer will appear here]</dd>
+                            </div>
+                        `;
+                    });
+
+                    stepCardMarkup += `</div></div>`;
+                    canvas.insertAdjacentHTML('beforeend', stepCardMarkup);
+                }
+            });
+        }
+
+        function renderSuccessCanvas(step, canvas) {
+            const html = `
+                <div class="usa-alert usa-alert--success usa-alert--slim margin-bottom-3" role="alert">
+                    <div class="usa-alert__body">
+                        <p class="usa-alert__text">${step.description || 'Your form has been submitted successfully.'}</p>
+                    </div>
+                </div>
+                ${step.calloutText ? `
+                <div class="usa-summary-box margin-top-3" role="region" aria-labelledby="summary-box-heading">
+                    <div class="usa-summary-box__body">
+                        <h2 class="usa-summary-box__heading font-sans-sm" id="summary-box-heading">What happens next</h2>
+                        <div class="usa-summary-box__text font-sans-xs">
+                            ${step.calloutText}
+                        </div>
+                    </div>
+                </div>` : ''}
+            `;
+            canvas.insertAdjacentHTML('beforeend', html);
+        }
+
+        function renderCanvasNavigation(canvas) {
+            const totalSteps = formSchema.steps.length;
+            const currentStep = formSchema.steps[currentStepIndex];
+            
+            let btnLabel = "Continue";
+            if(currentStep.type === 'intro') btnLabel = currentStep.buttonText || "Get started";
+            if(currentStep.type === 'review') btnLabel = "Submit application";
+            if(currentStep.type === 'success') btnLabel = null;
+
+            const navHTML = `
+                <div class="display-flex flex-justify margin-top-4 padding-top-3 border-top-1px border-base-lighter">
+                    ${currentStepIndex > 0 ? `<button class="usa-button usa-button--outline" id="canvas-prev-btn">Back</button>` : '<div></div>'}
+                    ${btnLabel ? `<button class="usa-button" id="canvas-next-btn">${btnLabel}</button>` : '<div></div>'}
+                </div>
+            `;
+            canvas.insertAdjacentHTML('beforeend', navHTML);
+
+            const prevBtn = document.getElementById('canvas-prev-btn');
+            const nextBtn = document.getElementById('canvas-next-btn');
+            
+            if(prevBtn) prevBtn.onclick = () => navigateToStep(currentStepIndex - 1);
+            if(nextBtn) nextBtn.onclick = () => {
+                if(currentStepIndex < totalSteps - 1) {
+                    navigateToStep(currentStepIndex + 1);
+                }
+            };
+        }
+
+        // Inspector panel for editing properties
+        function renderInspector() {
+            const formPanel = document.getElementById('inspector-content-form');
+            const emptyPanel = document.getElementById('inspector-empty-state');
+            
+            if(!selectedEntity.id) {
+                formPanel.style.display = 'none';
+                emptyPanel.style.display = 'block';
+                return;
+            }
+
+            formPanel.style.display = 'block';
+            emptyPanel.style.display = 'none';
+            formPanel.innerHTML = '';
+
+            if(selectedEntity.type === 'step') {
+                const step = formSchema.steps.find(s => s.id === selectedEntity.id);
+                if(!step) return;
+
+                let html = `
+                    <h2 class="font-sans-sm text-bold border-bottom-1px border-base-light padding-bottom-1 margin-top-0">Page properties</h2>
+                    <div class="margin-bottom-2">
+                        <label class="usa-label font-sans-xs" for="ins-step-title">Page title</label>
+                        <input class="usa-input" id="ins-step-title" type="text" value="${step.title || ''}" oninput="updateActiveStepProp('title', this.value)">
+                    </div>
+                `;
+
+                if(step.type === 'intro' || step.type === 'review' || step.type === 'success') {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-xs" for="ins-step-desc">Description</label>
+                            <span class="usa-hint font-sans-2xs">Text that appears below the title</span>
+                            <textarea class="usa-textarea" id="ins-step-desc" rows="4" oninput="updateActiveStepProp('description', this.value)">${step.description || ''}</textarea>
+                        </div>
+                    `;
+                }
+                if(step.type === 'intro') {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-xs" for="ins-step-btn">Button text</label>
+                            <input class="usa-input" id="ins-step-btn" type="text" value="${step.buttonText || ''}" oninput="updateActiveStepProp('buttonText', this.value)">
+                        </div>
+                    `;
+                }
+                if(step.type === 'success') {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-xs" for="ins-step-callout">Next steps</label>
+                            <span class="usa-hint font-sans-2xs">Tell users what happens after submission</span>
+                            <textarea class="usa-textarea" id="ins-step-callout" rows="3" oninput="updateActiveStepProp('calloutText', this.value)">${step.calloutText || ''}</textarea>
+                        </div>
+                    `;
+                }
+
+                formPanel.innerHTML = html;
+
+            } else if (selectedEntity.type === 'field') {
+                const currentStep = formSchema.steps[currentStepIndex];
+                const field = currentStep.fields.find(f => f.id === selectedEntity.id);
+                if(!field) return;
+
+                let html = `
+                    <h2 class="font-sans-sm text-bold border-bottom-1px border-base-light padding-bottom-1 margin-top-0">Field properties</h2>
+                    
+                    <div class="margin-bottom-2">
+                        <span class="font-sans-2xs text-base-dark text-semibold">Field ID</span>
+                        <code class="display-block bg-base-lightest padding-1 text-semibold radius-sm font-mono-2xs margin-top-05">${field.id}</code>
+                    </div>
+                    
+                    <div class="margin-bottom-2">
+                        <label class="usa-label font-sans-xs" for="ins-field-label">Label</label>
+                        <span class="usa-hint font-sans-2xs">The question or prompt users will see</span>
+                        <input class="usa-input" id="ins-field-label" type="text" value="${field.label || ''}" oninput="updateActiveFieldProp('label', this.value)">
+                    </div>
+                    
+                    <div class="margin-bottom-2">
+                        <label class="usa-label font-sans-xs" for="ins-field-hint">Help text</label>
+                        <span class="usa-hint font-sans-2xs">Optional guidance to help users answer</span>
+                        <textarea class="usa-textarea" id="ins-field-hint" rows="2" oninput="updateActiveFieldProp('hintText', this.value)">${field.hintText || ''}</textarea>
+                    </div>
+                    
+                    <div class="margin-bottom-2">
+                        <label class="usa-label font-sans-xs" for="ins-field-err">Error message</label>
+                        <span class="usa-hint font-sans-2xs">What users see if validation fails</span>
+                        <textarea class="usa-textarea" id="ins-field-err" rows="2" oninput="updateActiveFieldProp('errorMessage', this.value)">${field.errorMessage || ''}</textarea>
+                    </div>
+                `;
+
+                if(['text', 'textarea'].includes(field.type)) {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-xs" for="ins-field-place">Placeholder</label>
+                            <span class="usa-hint font-sans-2xs">Example text shown in empty field</span>
+                            <input class="usa-input" id="ins-field-place" type="text" value="${field.placeholder || ''}" oninput="updateActiveFieldProp('placeholder', this.value)">
+                        </div>
+                    `;
+                }
+
+                if(['radio', 'checkbox', 'dropdown'].includes(field.type)) {
+                    html += `
+                        <div class="margin-bottom-2">
+                            <label class="usa-label font-sans-xs" for="ins-field-opts">Options</label>
+                            <span class="usa-hint font-sans-2xs">Separate each option with a comma</span>
+                            <textarea class="usa-textarea" id="ins-field-opts" rows="3" oninput="updateActiveFieldOptions(this.value)">${(field.options || []).join(', ')}</textarea>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <div class="usa-checkbox margin-top-3 padding-top-2 border-top-1px border-base-lighter">
+                        <input class="usa-checkbox__input" id="ins-field-req" type="checkbox" name="ins-field-req" ${field.required ? 'checked' : ''} onchange="updateActiveFieldProp('required', this.checked)">
+                        <label class="usa-checkbox__label font-sans-xs text-bold" for="ins-field-req">Required field</label>
+                    </div>
+                    
+                    <button class="usa-button usa-button--secondary usa-button--outline margin-top-3 width-full" onclick="deleteActiveField()">
+                        <svg class="usa-icon" aria-hidden="true" focusable="false" role="img">
+                            <use xlink:href="https://cdnjs.cloudflare.com/ajax/libs/uswds/3.13.0/img/sprite.svg#delete"></use>
+                        </svg>
+                        Remove field
+                    </button>
+                `;
+
+                formPanel.innerHTML = html;
+            }
+        }
+
+        // Update functions for inspector
+        function updateActiveStepProp(prop, val) {
+            const step = formSchema.steps.find(s => s.id === selectedEntity.id);
+            if(step) {
+                step[prop] = val;
+                renderCanvas();
+                if(prop === 'title') renderTreePanels();
+            }
+        }
+
+        function updateActiveFieldProp(prop, val) {
+            const currentStep = formSchema.steps[currentStepIndex];
+            const field = currentStep.fields.find(f => f.id === selectedEntity.id);
+            if(field) {
+                field[prop] = val;
+                renderCanvas();
+                if(prop === 'label' || prop === 'required') renderTreePanels();
+            }
+        }
+
+        function updateActiveFieldOptions(val) {
+            const currentStep = formSchema.steps[currentStepIndex];
+            const field = currentStep.fields.find(f => f.id === selectedEntity.id);
+            if(field) {
+                field.options = val.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                renderCanvas();
+            }
+        }
+
+        function addNewField(type) {
+            if(!type) return;
+            const currentStep = formSchema.steps[currentStepIndex];
+            if(currentStep.type !== 'question') return;
+
+            const newId = `field_${Date.now().toString().slice(-6)}`;
+            const typeLabels = {
+                'text': 'text input',
+                'textarea': 'text area',
+                'radio': 'radio button group',
+                'checkbox': 'checkbox group',
+                'dropdown': 'dropdown menu',
+                'date': 'date picker',
+                'file': 'file upload'
+            };
+            
+            const newField = {
+                id: newId,
+                type: type,
+                label: `New ${typeLabels[type] || type}`,
+                hintText: "Help text for this field",
+                required: false,
+                errorMessage: "Please complete this field",
+                options: type === 'radio' || type === 'checkbox' || type === 'dropdown' ? ['Option 1', 'Option 2', 'Option 3'] : undefined
+            };
+
+            if(type === 'text' || type === 'textarea') {
+                newField.placeholder = "Enter text here";
+            }
+
+            currentStep.fields.push(newField);
+            selectedEntity = { type: 'field', id: newId };
+            document.getElementById('add-field-select').value = '';
+            renderWorkspace();
+        }
+
+        function deleteActiveField() {
+            if(!confirm('Remove this field from your form?')) return;
+            
+            const currentStep = formSchema.steps[currentStepIndex];
+            if(currentStep.type !== 'question') return;
+            
+            currentStep.fields = currentStep.fields.filter(f => f.id !== selectedEntity.id);
+            selectedEntity = { type: 'step', id: currentStep.id };
+            renderWorkspace();
+        }
+
+        // JSON import/export
+        function exportSchemaJson() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(formSchema, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            
+            const standardizedFileName = formSchema.formTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            downloadAnchorNode.setAttribute("download", `${standardizedFileName || 'form'}.json`);
+            
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function triggerJsonImport() {
+            document.getElementById('jsonFileInput').click();
+        }
+
+        function handleJsonImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsedJson = JSON.parse(e.target.result);
+                    if (parsedJson.formTitle && Array.isArray(parsedJson.steps)) {
+                        formSchema = parsedJson;
+                        currentStepIndex = 0;
+                        selectedEntity = { type: 'step', id: formSchema.steps[0].id };
+                        document.getElementById('app-form-title').value = formSchema.formTitle;
+                        renderWorkspace();
+                    } else {
+                        alert("This file doesn't appear to be a valid form template. Make sure it has a 'formTitle' and 'steps' array.");
+                    }
+                } catch (err) {
+                    alert("We couldn't read this JSON file. Please check that it's properly formatted.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+    </script>
+</body>
+</html>
