@@ -1,13 +1,12 @@
 # pure-html-requests
 
-mostly just a place to store prototypes I've made with Cursor. They're all mostly single page HTML experiences at the moment. 
-
 ## Available HTML Pages
 
 This repository contains the following HTML pages, accessible via GitHub Pages:
 
 - [Form New Fillable](https://tonyvergara.github.io/pure-html-requests/Form-new-fillable.html)
 - [Body Soul Jazz Weekend V2](https://tonyvergara.github.io/pure-html-requests/body-soul-jazz-weekend-v2.html)
+- [Body Soul Jazz Weekend V3](https://tonyvergara.github.io/pure-html-requests/body-soul-jazz-weekend-v3.html)
 - [Body Soul Jazz Weekend](https://tonyvergara.github.io/pure-html-requests/body-soul-jazz-weekend.html)
 - [Form Bootstrap](https://tonyvergara.github.io/pure-html-requests/form-bootstrap.html)
 - [Form Testing](https://tonyvergara.github.io/pure-html-requests/form-testing.html)
