@@ -1,5 +1,7 @@
 # pure-html-requests
 
+mostly just a place to store prototypes I've made with Cursor. They're all mostly single page HTML experiences at the moment. 
+
 ## Available HTML Pages
 
 This repository contains the following HTML pages, accessible via GitHub Pages:
