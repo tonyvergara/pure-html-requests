@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Body & Soul Jazz Weekend 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Source+Serif+4:ital,wght@0,400;0,600;1,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Design Tokens */
+        :root {
+            /* Paper - Backgrounds */
+            --color-paper-50: #FDFAF6;
+            --color-paper-100: #F5EFE4;
+            --color-paper-200: #EDE3D3;
+            --color-paper-300: #DDD0BC;
+            --color-paper-400: #C9B99F;
+            
+            /* Ink - Text & Borders */
+            --color-ink-900: #1C1410;
+            --color-ink-800: #2E2218;
+            --color-ink-700: #3D2E24;
+            --color-ink-500: #7A6355;
+            --color-ink-400: #9E8878;
+            --color-ink-300: #BDB0A4;
+            
+            /* Brick - Primary */
+            --color-brick-800: #621A00;
+            --color-brick-700: #8B2E00;
+            --color-brick-500: #C94B1F;
+            --color-brick-300: #E5926A;
+            --color-brick-100: #FAE9DF;
+            
+            /* Gold - Secondary */
+            --color-gold-500: #BF952A;
+            --color-gold-100: #FAF3E0;
+            
+            /* Category - Music events */
+            --cat-events: #1C5E5E;
+            
+            /* Shadows - Solid offset */
+            --shadow-block-sm: 6px 6px 0 rgba(28, 20, 16, 0.15);
+            --shadow-block: 8px 8px 0 rgba(28, 20, 16, 0.15);
+            --shadow-block-brick: 8px 8px 0 var(--color-brick-500);
+            
+            /* Typography */
+            --font-display: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-reading: 'Source Serif 4', Georgia, serif;
+            --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+            
+            /* Spacing */
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 20px;
+            --space-6: 24px;
+            --space-8: 32px;
+            --space-10: 40px;
+            --space-12: 48px;
+            --space-16: 64px;
+            --space-20: 80px;
+        }
+
+        /* Base Styles */
+        body {
+            font-family: var(--font-display);
+            background: var(--color-paper-200);
+            color: var(--color-ink-900);
+            line-height: 1.4;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Focus visible for accessibility */
+        *:focus-visible {
+            outline: 3px solid var(--color-brick-500);
+            outline-offset: 2px;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-family: var(--font-display);
+            line-height: 1.1;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 8vw, 5.5rem);
+        }
+
+        h2 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 900;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .eyebrow {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-family: var(--font-display);
+        }
+
+        .reading-text {
+            font-family: var(--font-reading);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 var(--space-4);
+        }
+
+        @media (min-width: 640px) {
+            .container {
+                padding: 0 var(--space-6);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                padding: 0 var(--space-8);
+            }
+        }
+
+        /* Skip Link */
+        .skip-link {
+            position: absolute;
+            top: -100px;
+            left: 0;
+            background: var(--color-ink-900);
+            color: var(--color-paper-50);
+            padding: var(--space-2) var(--space-4);
+            text-decoration: none;
+            font-weight: 600;
+            z-index: 100;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Header */
+        header {
+            background: var(--color-paper-100);
+            border-bottom: 2px solid var(--color-ink-900);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .logo {
+            font-size: 1.125rem;
+            font-weight: 900;
+            color: var(--color-ink-900);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: var(--color-paper-100);
+            border-bottom: 2px solid var(--color-ink-900);
+            padding: var(--space-16) 0;
+        }
+
+        @media (min-width: 640px) {
+            .hero {
+                padding: var(--space-20) 0;
+            }
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .hero-eyebrow {
+            color: var(--color-brick-500);
+            margin-bottom: var(--space-3);
+            display: block;
+        }
+
+        .hero h1 {
+            margin-bottom: var(--space-6);
+        }
+
+        .hero-subtitle {
+            font-family: var(--font-reading);
+            font-size: 1.25rem;
+            line-height: 1.6;
+            color: var(--color-ink-700);
+            margin-bottom: var(--space-8);
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-4);
+            justify-content: center;
+        }
+
+        .meta-card {
+            border: 2px solid var(--color-ink-900);
+            background: var(--color-paper-50);
+            padding: var(--space-4) var(--space-5);
+            box-shadow: var(--shadow-block-sm);
+            min-width: 200px;
+        }
+
+        .meta-label {
+            display: block;
+            color: var(--color-ink-500);
+            margin-bottom: var(--space-1);
+        }
+
+        .meta-value {
+            display: block;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+
+        /* Section */
+        section {
+            padding: var(--space-12) 0;
+            border-bottom: 2px solid var(--color-ink-900);
+        }
+
+        @media (min-width: 640px) {
+            section {
+                padding: var(--space-16) 0;
+            }
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--space-10);
+        }
+
+        .section-eyebrow {
+            color: var(--color-brick-500);
+            margin-bottom: var(--space-3);
+            display: block;
+        }
+
+        .section-title {
+            margin-bottom: var(--space-4);
+        }
+
+        .section-description {
+            font-family: var(--font-reading);
+            font-size: 1.125rem;
+            line-height: 1.7;
+            color: var(--color-ink-700);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* About Section */
+        .about {
+            background: var(--color-paper-50);
+        }
+
+        .about-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .about-content p {
+            font-family: var(--font-reading);
+            font-size: 1.125rem;
+            line-height: 1.7;
+            color: var(--color-ink-700);
+            margin-bottom: var(--space-6);
+        }
+
+        .about-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Schedule Section */
+        .schedule {
+            background: var(--color-paper-100);
+        }
+
+        .schedule-grid {
+            display: grid;
+            gap: var(--space-5);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .schedule-card {
+            border: 2px solid var(--color-ink-900);
+            background: var(--color-paper-50);
+            box-shadow: var(--shadow-block-sm);
+            transition: transform 150ms ease, box-shadow 150ms ease;
+        }
+
+        .schedule-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: var(--shadow-block);
+        }
+
+        .schedule-accent {
+            height: 6px;
+            background: var(--cat-events);
+            border-bottom: 2px solid var(--color-ink-900);
+        }
+
+        .schedule-content {
+            padding: var(--space-5);
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .schedule-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .schedule-time {
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            color: var(--color-brick-500);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .schedule-description {
+            font-family: var(--font-reading);
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--color-ink-700);
+        }
+
+        /* Gallery Section */
+        .gallery {
+            background: var(--color-paper-50);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-5);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .gallery-item {
+            aspect-ratio: 4/3;
+            border: 2px solid var(--color-ink-900);
+            background: linear-gradient(135deg, var(--color-brick-500) 0%, var(--color-gold-500) 50%, var(--cat-events) 100%);
+            box-shadow: var(--shadow-block-sm);
+            transition: transform 150ms ease, box-shadow 150ms ease;
+            cursor: pointer;
+        }
+
+        .gallery-item:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: var(--shadow-block);
+        }
+
+        @media (max-width: 640px) {
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* FAQ Section */
+        .faq {
+            background: var(--color-paper-100);
+        }
+
+        .faq-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            border: 2px solid var(--color-ink-900);
+            background: var(--color-paper-50);
+            margin-bottom: var(--space-4);
+        }
+
+        .faq-button {
+            width: 100%;
+            padding: var(--space-5);
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-4);
+            font-family: var(--font-display);
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--color-ink-900);
+            transition: background 150ms ease;
+        }
+
+        .faq-button:hover {
+            background: var(--color-paper-200);
+        }
+
+        .faq-icon {
+            color: var(--color-brick-500);
+            font-weight: 900;
+            font-size: 1.5rem;
+            transition: transform 250ms ease;
+            flex-shrink: 0;
+        }
+
+        .faq-item.expanded .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 250ms ease;
+        }
+
+        .faq-answer-content {
+            padding: 0 var(--space-5) var(--space-5);
+            border-top: 2px solid var(--color-paper-300);
+        }
+
+        .faq-answer p {
+            font-family: var(--font-reading);
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--color-ink-700);
+            padding-top: var(--space-5);
+        }
+
+        .faq-item.expanded .faq-answer {
+            max-height: 600px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--color-ink-900);
+            color: var(--color-paper-100);
+            padding: var(--space-12) 0 var(--space-8);
+        }
+
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .footer-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: var(--space-4);
+            color: var(--color-paper-50);
+        }
+
+        .footer-text {
+            font-family: var(--font-reading);
+            color: var(--color-ink-400);
+            margin-bottom: var(--space-6);
+            line-height: 1.6;
+        }
+
+        .social-links {
+            display: flex;
+            gap: var(--space-3);
+            justify-content: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border: 2px solid var(--color-paper-100);
+            background: transparent;
+            color: var(--color-paper-100);
+            text-decoration: none;
+            font-weight: 700;
+            transition: background 150ms ease, transform 150ms ease;
+        }
+
+        .social-link:hover {
+            background: var(--color-brick-500);
+            border-color: var(--color-brick-500);
+            transform: translate(-2px, -2px);
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            margin-top: var(--space-6);
+        }
+
+        .contact-link {
+            color: var(--color-ink-400);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            font-size: 0.9375rem;
+            transition: color 150ms ease;
+        }
+
+        .contact-link:hover {
+            color: var(--color-brick-300);
+        }
+
+        .footer-bottom {
+            margin-top: var(--space-8);
+            padding-top: var(--space-6);
+            border-top: 2px solid var(--color-ink-700);
+            font-size: 0.875rem;
+            color: var(--color-ink-500);
+        }
+
+        /* Utilities */
+        .text-balance {
+            text-wrap: balance;
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">BODY & SOUL</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <span class="hero-eyebrow eyebrow">Three-Day Festival</span>
+                <h1 class="text-balance">Body & Soul Jazz Weekend</h1>
+                <p class="hero-subtitle">Music, movement, and creative expression in Baltimore's River Park Arts District</p>
+                
+                <div class="hero-meta">
+                    <div class="meta-card">
+                        <span class="meta-label eyebrow">When</span>
+                        <span class="meta-value">Sept 15–17, 2026</span>
+                    </div>
+                    <div class="meta-card">
+                        <span class="meta-label eyebrow">Where</span>
+                        <span class="meta-value">River Park Arts District</span>
+                    </div>
+                    <div class="meta-card">
+                        <span class="meta-label eyebrow">Access</span>
+                        <span class="meta-value">All Ages Welcome</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="main-content">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-eyebrow eyebrow">About the Festival</span>
+                <h2 class="section-title">What to Expect</h2>
+            </div>
+            <div class="about-content">
+                <p>Body & Soul Jazz Weekend brings together live performances, interactive workshops, and artistic showcases celebrating jazz's rich history and ongoing evolution. Over three days, experience the genre through music, dance, visual art, and community.</p>
+                <p>Whether you're a longtime jazz enthusiast or new to the art form, the festival offers programming for all levels. Come to watch, participate, learn, or simply enjoy the atmosphere.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Schedule Section -->
+    <section class="schedule">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-eyebrow eyebrow">Programming</span>
+                <h2 class="section-title">Weekend Schedule</h2>
+            </div>
+            <div class="schedule-grid">
+                <article class="schedule-card">
+                    <div class="schedule-accent"></div>
+                    <div class="schedule-content">
+                        <div class="schedule-header">
+                            <h3 class="schedule-title">Opening Night Concert</h3>
+                            <span class="schedule-time">FRI 19:00</span>
+                        </div>
+                        <p class="schedule-description">Start the weekend with performances by internationally acclaimed jazz ensembles. Outdoor main stage with covered seating.</p>
+                    </div>
+                </article>
+
+                <article class="schedule-card">
+                    <div class="schedule-accent"></div>
+                    <div class="schedule-content">
+                        <div class="schedule-header">
+                            <h3 class="schedule-title">Movement & Dance Workshops</h3>
+                            <span class="schedule-time">SAT 14:00</span>
+                        </div>
+                        <p class="schedule-description">Learn swing, blues, and contemporary jazz dance from experienced instructors. Beginner through advanced sessions available.</p>
+                    </div>
+                </article>
+
+                <article class="schedule-card">
+                    <div class="schedule-accent"></div>
+                    <div class="schedule-content">
+                        <div class="schedule-header">
+                            <h3 class="schedule-title">Visual Arts Showcase</h3>
+                            <span class="schedule-time">SAT 16:00</span>
+                        </div>
+                        <p class="schedule-description">Browse jazz-inspired paintings and sculptures in the gallery space. Watch artists create live murals throughout the afternoon.</p>
+                    </div>
+                </article>
+
+                <article class="schedule-card">
+                    <div class="schedule-accent"></div>
+                    <div class="schedule-content">
+                        <div class="schedule-header">
+                            <h3 class="schedule-title">Open Jam Sessions</h3>
+                            <span class="schedule-time">SAT 20:00</span>
+                        </div>
+                        <p class="schedule-description">Musicians of all skill levels welcome to join impromptu jam sessions. Instruments and equipment provided.</p>
+                    </div>
+                </article>
+
+                <article class="schedule-card">
+                    <div class="schedule-accent"></div>
+                    <div class="schedule-content">
+                        <div class="schedule-header">
+                            <h3 class="schedule-title">Food & Culture Village</h3>
+                            <span class="schedule-time">ALL WEEKEND</span>
+                        </div>
+                        <p class="schedule-description">Local food vendors and artisan market open throughout festival hours. International cuisines and jazz-era specialties available.</p>
+                    </div>
+                </article>
+
+                <article class="schedule-card">
+                    <div class="schedule-accent"></div>
+                    <div class="schedule-content">
+                        <div class="schedule-header">
+                            <h3 class="schedule-title">Closing Performance</h3>
+                            <span class="schedule-time">SUN 18:00</span>
+                        </div>
+                        <p class="schedule-description">Festival finale featuring collaborative performance with participating artists. Main stage, general admission.</p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="gallery">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-eyebrow eyebrow">Photo Archive</span>
+                <h2 class="section-title">Past Moments</h2>
+            </div>
+            <div class="gallery-grid">
+                <div class="gallery-item" role="img" aria-label="Festival photo placeholder"></div>
+                <div class="gallery-item" role="img" aria-label="Festival photo placeholder"></div>
+                <div class="gallery-item" role="img" aria-label="Festival photo placeholder"></div>
+                <div class="gallery-item" role="img" aria-label="Festival photo placeholder"></div>
+                <div class="gallery-item" role="img" aria-label="Festival photo placeholder"></div>
+                <div class="gallery-item" role="img" aria-label="Festival photo placeholder"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-eyebrow eyebrow">Visitor Information</span>
+                <h2 class="section-title">Practical Information</h2>
+            </div>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <button class="faq-button" aria-expanded="false">
+                        <span>How do I get there?</span>
+                        <span class="faq-icon" aria-hidden="true">↓</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>The festival is at River Park Arts District, 450 Riverside Boulevard. Take the Green Line to Arts District station (5-minute walk) or park on-site for $10 per day. The venue is fully wheelchair accessible.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-button" aria-expanded="false">
+                        <span>What are the hours?</span>
+                        <span class="faq-icon" aria-hidden="true">↓</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Friday: 6:00 PM – 11:00 PM<br>Saturday: 12:00 PM – 11:00 PM<br>Sunday: 12:00 PM – 9:00 PM<br><br>Gates open one hour before official start times. Some workshops require advance registration.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-button" aria-expanded="false">
+                        <span>What should I bring?</span>
+                        <span class="faq-icon" aria-hidden="true">↓</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Bring comfortable shoes for dancing, sunscreen, and a reusable water bottle (free refill stations on-site). Blankets and low-back chairs are allowed in outdoor seating areas. Large bags and outside food are not permitted.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-button" aria-expanded="false">
+                        <span>Is this family-friendly?</span>
+                        <span class="faq-icon" aria-hidden="true">↓</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Yes. We have a dedicated Kids' Jazz Corner with age-appropriate workshops and activities. Children under 12 enter free with an adult. Family rest areas and stroller parking available throughout the grounds.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-button" aria-expanded="false">
+                        <span>Can I bring my pet?</span>
+                        <span class="faq-icon" aria-hidden="true">↓</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Service animals are always welcome. Pets cannot be accommodated due to crowd safety and comfort concerns.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-button" aria-expanded="false">
+                        <span>How can I get involved?</span>
+                        <span class="faq-icon" aria-hidden="true">↓</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Volunteer opportunities are available on our website (volunteers receive a t-shirt and meal vouchers). Musicians interested in jam sessions can register at the Artist Lounge on-site. Applications for next year's performance lineup open in January.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <h3 class="footer-title">Stay Connected</h3>
+                <p class="footer-text">Get updates on next year's lineup and behind-the-scenes content</p>
+                
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Instagram">
+                        <span aria-hidden="true">IG</span>
+                    </a>
+                    <a href="#" class="social-link" aria-label="Facebook">
+                        <span aria-hidden="true">FB</span>
+                    </a>
+                    <a href="#" class="social-link" aria-label="Twitter">
+                        <span aria-hidden="true">X</span>
+                    </a>
+                </div>
+
+                <div class="contact-info">
+                    <a href="mailto:info@bodysouljazzweekend.com" class="contact-link">info@bodysouljazzweekend.com</a>
+                    <a href="tel:+15551234569" class="contact-link">(555) 123-4569</a>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; 2026 Body & Soul Jazz Weekend</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // FAQ Accordion with ARIA
+        document.querySelectorAll('.faq-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const item = button.parentElement;
+                const isExpanded = item.classList.contains('expanded');
+                
+                // Close all items
+                document.querySelectorAll('.faq-item').forEach(i => {
+                    i.classList.remove('expanded');
+                    i.querySelector('.faq-button').setAttribute('aria-expanded', 'false');
+                });
+                
+                // Open clicked item if it was closed
+                if (!isExpanded) {
+                    item.classList.add('expanded');
+                    button.setAttribute('aria-expanded', 'true');
+                }
+            });
+        });
+
+        // Keyboard support
+        document.querySelectorAll('.faq-button').forEach(button => {
+            button.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    button.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
