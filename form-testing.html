@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USWDS Form Schema Builder & Prototype Generator</title>
+    <title>USWDS Form Schema Builder & Prototype Generator - Testing Version</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uswds/3.13.0/css/uswds.min.css">
     <style>
-        /* Contextual adjustments for the workspace application layout */
+        /* Base Layout */
         body, html { height: 100%; margin: 0; overflow: hidden; }
-        .workspace-container { display: flex; height: calc(100vh - 120px); overflow: hidden; }
-        .panel-sidebar { width: 320px; background-color: #f0f4f9; border-right: 1px solid #adcded; overflow-y: auto; }
+        .workspace-container { display: flex; height: calc(100vh - 180px); overflow: hidden; position: relative; }
+        .panel-sidebar { width: 320px; background-color: #f0f4f9; border-right: 1px solid #adcded; overflow-y: auto; transition: transform 0.3s ease; }
         .panel-canvas { flex: 1; background-color: #ffffff; overflow-y: auto; padding: 2rem; position: relative; }
-        .panel-inspector { width: 360px; background-color: #f0f4f9; border-left: 1px solid #adcded; overflow-y: auto; }
+        .panel-inspector { width: 360px; background-color: #f0f4f9; border-left: 1px solid #adcded; overflow-y: auto; transition: transform 0.3s ease; }
         .tree-item { cursor: pointer; transition: background 0.1s ease; }
         .tree-item:hover { background-color: #dfeefc; }
         .tree-item.is-selected { background-color: #005ea2; color: white; }
@@ -19,26 +19,159 @@
         .preview-mode-badge { position: absolute; top: 10px; right: 20px; z-index: 100; opacity: 0.7; }
         .hidden-file-input { display: none; }
         
+        /* Progress Bar Navigation */
+        .progress-navigation {
+            background-color: #f0f0f0;
+            padding: 1rem 0;
+            border-bottom: 1px solid #dfe1e2;
+        }
+        .progress-bar-container {
+            height: 8px;
+            background-color: #dfe1e2;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #005ea2;
+            transition: width 0.3s ease;
+        }
+        .step-indicators {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .step-indicator {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            background-color: #e6e6e6;
+            color: #71767a;
+        }
+        .step-indicator.active {
+            background-color: #005ea2;
+            color: white;
+            font-weight: bold;
+        }
+        .step-indicator.completed {
+            background-color: #00a91c;
+            color: white;
+        }
+        .step-indicator:hover {
+            background-color: #1a4480;
+            color: white;
+        }
+        
+        /* Mobile Panel Toggle Buttons */
+        .mobile-panel-toggle {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            background-color: #005ea2;
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+        .mobile-panel-toggle:hover {
+            background-color: #1a4480;
+        }
+        .toggle-sidebar {
+            bottom: 80px;
+            left: 10px;
+        }
+        .toggle-inspector {
+            bottom: 20px;
+            right: 10px;
+        }
+        
+        /* Panel Overlay */
+        .panel-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 998;
+        }
+        
+        /* Breadcrumb Navigation */
+        .breadcrumb-nav {
+            padding: 0.75rem 2rem;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #dfe1e2;
+            font-size: 0.875rem;
+        }
+        .breadcrumb-nav a {
+            color: #005ea2;
+            text-decoration: none;
+            margin-right: 0.5rem;
+        }
+        .breadcrumb-nav a:hover {
+            text-decoration: underline;
+        }
+        .breadcrumb-nav span {
+            color: #71767a;
+            margin: 0 0.5rem;
+        }
+        
         /* Mobile Responsive Styles */
         @media screen and (max-width: 1024px) {
             .workspace-container {
-                flex-direction: column;
                 height: auto;
-                overflow: visible;
+                min-height: calc(100vh - 180px);
+            }
+            
+            .mobile-panel-toggle {
+                display: block;
             }
             
             .panel-sidebar,
             .panel-inspector {
-                width: 100%;
-                border-right: none;
-                border-left: none;
-                border-bottom: 1px solid #adcded;
-                max-height: none;
+                position: fixed;
+                top: 0;
+                height: 100vh;
+                z-index: 999;
+                transform: translateX(-100%);
+                box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            }
+            
+            .panel-sidebar {
+                left: 0;
+            }
+            
+            .panel-sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .panel-inspector {
+                right: 0;
+                left: auto;
+                transform: translateX(100%);
+            }
+            
+            .panel-inspector.open {
+                transform: translateX(0);
+            }
+            
+            .panel-overlay.active {
+                display: block;
             }
             
             .panel-canvas {
-                padding: 1rem;
                 width: 100%;
+                padding: 1rem;
             }
             
             .preview-mode-badge {
@@ -46,6 +179,15 @@
                 display: block;
                 margin-bottom: 1rem;
                 opacity: 1;
+            }
+            
+            .step-indicators {
+                flex-wrap: wrap;
+            }
+            
+            .step-indicator {
+                font-size: 0.625rem;
+                padding: 0.4rem;
             }
         }
         
@@ -93,14 +235,24 @@
                 gap: 0.5rem;
                 text-align: center;
             }
+            
+            .breadcrumb-nav {
+                padding: 0.5rem 1rem;
+                font-size: 0.75rem;
+            }
+            
+            .progress-navigation {
+                padding: 0.75rem 1rem;
+            }
+            
+            .panel-sidebar,
+            .panel-inspector {
+                width: 85%;
+                max-width: 320px;
+            }
         }
         
         @media screen and (max-width: 480px) {
-            .panel-sidebar,
-            .panel-inspector {
-                padding: 1rem !important;
-            }
-            
             .panel-canvas {
                 padding: 0.5rem;
             }
@@ -143,6 +295,38 @@
             h3 {
                 font-size: 1.1rem;
             }
+            
+            .mobile-panel-toggle {
+                font-size: 0.75rem;
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .step-indicator {
+                font-size: 0.5rem;
+                padding: 0.3rem 0.2rem;
+            }
+        }
+        
+        /* Close Button for Mobile Panels */
+        .panel-close-btn {
+            display: none;
+            position: sticky;
+            top: 0;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #1a4480;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 1;
+            text-align: center;
+        }
+        
+        @media screen and (max-width: 1024px) {
+            .panel-close-btn {
+                display: block;
+            }
         }
     </style>
 </head>
@@ -156,7 +340,7 @@
                 </div>
                 <div class="grid-col-fill tablet:grid-col-auto">
                     <p class="usa-banner__header-text">An official website of the United States government</p>
-                    <p class="usa-banner__header-action" aria-hidden="true">Here’s how you know</p>
+                    <p class="usa-banner__header-action" aria-hidden="true">Here's how you know</p>
                 </div>
             </div>
         </div>
@@ -166,7 +350,7 @@
         <div class="grid-container maxw-widescreen display-flex flex-justify flex-align-center">
             <div>
                 <em class="usa-logo__text font-sans-lg text-bold text-white margin-0">USWDS Form Prototype Engine</em>
-                <p class="text-neutral-light font-sans-3xs margin-0">JSON-Driven Dynamic UX Architecture Sandbox</p>
+                <p class="text-neutral-light font-sans-3xs margin-0">Enhanced Testing Version with Mobile Navigation</p>
             </div>
             <div class="display-flex gap-1">
                 <button class="usa-button usa-button--accent-cool" onclick="triggerJsonImport()">
@@ -183,9 +367,25 @@
         </div>
     </header>
 
+    <nav class="breadcrumb-nav">
+        <span id="breadcrumb-content"></span>
+    </nav>
+
+    <div class="progress-navigation">
+        <div class="grid-container maxw-widescreen">
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progress-bar"></div>
+            </div>
+            <div class="step-indicators" id="step-indicators"></div>
+        </div>
+    </div>
+
     <main class="workspace-container">
         
-        <aside class="panel-sidebar padding-2">
+        <div class="panel-overlay" id="panel-overlay" onclick="closePanels()"></div>
+        
+        <aside class="panel-sidebar padding-2" id="sidebar-panel">
+            <button class="panel-close-btn" onclick="closeSidebar()">✕ Close</button>
             <h2 class="font-sans-xs text-bold text-uppercase tracking-1 margin-bottom-2 text-primary-darker">Form Architecture</h2>
             
             <div class="margin-bottom-3">
@@ -229,7 +429,8 @@
                 </div>
         </section>
 
-        <aside class="panel-inspector padding-2" id="inspector-panel-view">
+        <aside class="panel-inspector padding-2" id="inspector-panel">
+            <button class="panel-close-btn" onclick="closeInspector()">✕ Close</button>
             <div id="inspector-empty-state" class="text-center padding-top-4">
                 <p class="text-italic text-neutral">Select a step or component field from the layout hierarchy to inspect and modify its validation and layout tokens.</p>
             </div>
@@ -239,10 +440,17 @@
 
     </main>
 
+    <button class="mobile-panel-toggle toggle-sidebar" onclick="toggleSidebar()">
+        📋 Form Structure
+    </button>
+    <button class="mobile-panel-toggle toggle-inspector" onclick="toggleInspector()">
+        ⚙️ Inspector
+    </button>
+
     <footer class="usa-footer usa-footer--slim bg-neutral-dark text-white padding-y-2">
         <div class="grid-container maxw-widescreen font-sans-3xs text-neutral-light display-flex flex-justify">
             <div>Engine Target Compliance: USWDS v3.13.0 Standards</div>
-            <div>Strict Utility-First Scoping Profile — Semantic Structure Matrix</div>
+            <div>Enhanced Testing Version with Mobile Panels</div>
         </div>
     </footer>
 
@@ -298,13 +506,50 @@
         };
 
         let currentStepIndex = 0;
-        let selectedEntity = { type: 'step', id: 'intro_step' }; // Tracking selections for Inspector tracking
+        let selectedEntity = { type: 'step', id: 'intro_step' };
         let forceGlobalErrors = false;
+
+        // Mobile Panel Management
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar-panel');
+            const overlay = document.getElementById('panel-overlay');
+            const inspector = document.getElementById('inspector-panel');
+            
+            inspector.classList.remove('open');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function toggleInspector() {
+            const inspector = document.getElementById('inspector-panel');
+            const overlay = document.getElementById('panel-overlay');
+            const sidebar = document.getElementById('sidebar-panel');
+            
+            sidebar.classList.remove('open');
+            inspector.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar-panel').classList.remove('open');
+            document.getElementById('panel-overlay').classList.remove('active');
+        }
+
+        function closeInspector() {
+            document.getElementById('inspector-panel').classList.remove('open');
+            document.getElementById('panel-overlay').classList.remove('active');
+        }
+
+        function closePanels() {
+            closeSidebar();
+            closeInspector();
+        }
 
         // Life Cycle Initialization Engine Hooks
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('app-form-title').value = formSchema.formTitle;
             renderWorkspaceState();
+            updateProgressNavigation();
         });
 
         function toggleGlobalErrors() {
@@ -329,12 +574,15 @@
         function updateFormTitle(val) {
             formSchema.formTitle = val;
             renderCanvas();
+            updateProgressNavigation();
         }
 
         function navigateToStep(idx) {
             currentStepIndex = idx;
             selectedEntity = { type: 'step', id: formSchema.steps[idx].id };
             renderWorkspaceState();
+            updateProgressNavigation();
+            closePanels();
         }
 
         function selectFieldEntity(fieldId) {
@@ -342,18 +590,49 @@
             renderWorkspaceState();
         }
 
+        function updateProgressNavigation() {
+            const totalSteps = formSchema.steps.length;
+            const progress = ((currentStepIndex + 1) / totalSteps) * 100;
+            
+            document.getElementById('progress-bar').style.width = progress + '%';
+            
+            const indicatorsContainer = document.getElementById('step-indicators');
+            indicatorsContainer.innerHTML = '';
+            
+            formSchema.steps.forEach((step, idx) => {
+                const indicator = document.createElement('div');
+                indicator.className = 'step-indicator';
+                
+                if (idx < currentStepIndex) {
+                    indicator.classList.add('completed');
+                } else if (idx === currentStepIndex) {
+                    indicator.classList.add('active');
+                }
+                
+                indicator.textContent = `${idx + 1}. ${step.title}`;
+                indicator.onclick = () => navigateToStep(idx);
+                indicatorsContainer.appendChild(indicator);
+            });
+            
+            const breadcrumb = document.getElementById('breadcrumb-content');
+            const currentStep = formSchema.steps[currentStepIndex];
+            breadcrumb.innerHTML = `
+                <a href="javascript:navigateToStep(0)">${formSchema.formTitle}</a>
+                <span>›</span>
+                <strong>Step ${currentStepIndex + 1} of ${totalSteps}: ${currentStep.title}</strong>
+            `;
+        }
+
         function renderWorkspaceState() {
             renderTreePanels();
             renderCanvas();
             renderInspector();
             
-            // Re-bind native USWDS visual interactions explicitly if DOM elements are re-written dynamically
             if(window.USWDS && typeof window.USWDS.refetch === 'function') {
                 window.USWDS.refetch();
             }
         }
 
-        // Render Structure Trees
         function renderTreePanels() {
             const pagesTree = document.getElementById('pages-list-tree');
             pagesTree.innerHTML = '';
@@ -393,14 +672,12 @@
             }
         }
 
-        // Render Live Preview UI Frame
         function renderCanvas() {
             const canvas = document.getElementById('uswds-rendering-canvas');
             canvas.innerHTML = '';
 
             const step = formSchema.steps[currentStepIndex];
 
-            // Render Title Context Context Block
             const formHeaderHTML = `
                 <div class="border-bottom-1px border-neutral-light padding-bottom-2 margin-bottom-3">
                     <span class="text-primary text-bold font-sans-2xs text-uppercase tracking-2">${formSchema.formTitle}</span>
@@ -409,7 +686,6 @@
             `;
             canvas.insertAdjacentHTML('beforeend', formHeaderHTML);
 
-            // Add Master Top Alert Error Banner if state is forced
             if(forceGlobalErrors && step.type === 'question') {
                 const errorBannerHTML = `
                     <div class="usa-alert usa-alert--error usa-alert--no-icon margin-bottom-3" role="alert">
@@ -422,7 +698,6 @@
                 canvas.insertAdjacentHTML('beforeend', errorBannerHTML);
             }
 
-            // Route dynamic component templates
             if(step.type === 'intro') {
                 renderIntroCanvas(step, canvas);
             } else if(step.type === 'question') {
@@ -433,7 +708,6 @@
                 renderSuccessCanvas(step, canvas);
             }
 
-            // Global Navigation Footer Inside Preview Container
             renderCanvasNavigation(canvas);
         }
 
@@ -526,7 +800,6 @@
         function renderReviewCanvas(step, canvas) {
             canvas.insertAdjacentHTML('beforeend', `<p class="usa-prose font-sans-sm text-neutral-dark margin-bottom-3">${step.description || 'Review configurations generated sequentially.'}</p>`);
 
-            // Dynamically mirrors every field created across all structural data steps
             formSchema.steps.forEach(st => {
                 if(st.type === 'question' && st.fields && st.fields.length > 0) {
                     let stepCardMarkup = `
@@ -581,7 +854,6 @@
             `;
             canvas.insertAdjacentHTML('beforeend', navHTML);
 
-            // Attach operational page navigation actions directly within canvas preview elements
             const prevBtn = document.getElementById('canvas-prev-btn');
             const nextBtn = document.getElementById('canvas-next-btn');
             
@@ -589,7 +861,6 @@
             if(nextBtn) nextBtn.onclick = () => navigateToStep(currentStepIndex + 1);
         }
 
-        // Render Inspector Controls Framework
         function renderInspector() {
             const formPanel = document.getElementById('inspector-content-form');
             const emptyPanel = document.getElementById('inspector-empty-state');
@@ -698,14 +969,15 @@
             }
         }
 
-        // State Editing Mutation Commands
         function updateActiveStepProp(prop, val) {
             const step = formSchema.steps.find(s => s.id === selectedEntity.id);
             if(step) {
                 step[prop] = val;
                 renderCanvas();
-                // Sync main page title card tree view elements dynamically 
-                if(prop === 'title') renderTreePanels();
+                if(prop === 'title') {
+                    renderTreePanels();
+                    updateProgressNavigation();
+                }
             }
         }
 
@@ -758,7 +1030,6 @@
             renderWorkspaceState();
         }
 
-        // Export Payload Schema JSON Engine Link
         function exportSchemaJson() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(formSchema, null, 4));
             const downloadAnchorNode = document.createElement('a');
@@ -772,7 +1043,6 @@
             downloadAnchorNode.remove();
         }
 
-        // Import Payload Validation Process Functions
         function triggerJsonImport() {
             document.getElementById('jsonFileInput').click();
         }
@@ -791,6 +1061,7 @@
                         selectedEntity = { type: 'step', id: formSchema.steps[0].id };
                         document.getElementById('app-form-title').value = formSchema.formTitle;
                         renderWorkspaceState();
+                        updateProgressNavigation();
                     } else {
                         alert("Invalid Schema Violation: Input must contain foundational system top structures ('formTitle' and array components inside 'steps').");
                     }
@@ -799,7 +1070,7 @@
                 }
             };
             reader.readAsText(file);
-            event.target.value = ''; // Reset file input token container 
+            event.target.value = '';
         }
     </script>
 </body>
