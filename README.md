@@ -9,6 +9,7 @@ This repository contains the following HTML pages, accessible via GitHub Pages:
 - [Body Soul Jazz Weekend V3](https://tonyvergara.github.io/pure-html-requests/body-soul-jazz-weekend-v3.html)
 - [Body Soul Jazz Weekend](https://tonyvergara.github.io/pure-html-requests/body-soul-jazz-weekend.html)
 - [Event Schedule V2](https://tonyvergara.github.io/pure-html-requests/event-schedule-v2.html)
+- [Event Schedule V3](https://tonyvergara.github.io/pure-html-requests/event-schedule-v3.html)
 - [Event Schedule](https://tonyvergara.github.io/pure-html-requests/event-schedule.html)
 - [Form Bootstrap](https://tonyvergara.github.io/pure-html-requests/form-bootstrap.html)
 - [Form Testing](https://tonyvergara.github.io/pure-html-requests/form-testing.html)
