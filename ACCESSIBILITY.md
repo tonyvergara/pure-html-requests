@@ -1,6 +1,13 @@
-# Accessibility Compliance for Event Schedule
+# Accessibility Compliance for Event Schedule v2
 
-This document outlines how the event schedule webpage meets **WCAG 2.2 Level AA** standards and accessibility best practices.
+This document outlines how the **event-schedule-v2.html** webpage meets **WCAG 2.2 Level AA** standards and accessibility best practices.
+
+## File Comparison
+
+- **event-schedule.html** - Original version with basic Chart.js implementation
+- **event-schedule-v2.html** - Accessibility-enhanced version with WCAG 2.2 AA compliance
+
+This document applies to `event-schedule-v2.html`.
 
 ## WCAG 2.2 AA Compliance Summary
 

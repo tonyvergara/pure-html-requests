@@ -3,22 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tech Conference 2026 - Event Schedule</title>
+<title>Event Schedule</title>
 <style>
 :root {
   --bg: #fafaf7;
   --fg: #1d1d1b;
-  --mut: #737370;
+  --mut: #6b6b66;
   --line: #e2e1da;
   --card: #fff;
-  --talk: #2563eb;
-  --break: #71717a;
-  --meal: #ea580c;
-  --social: #059669;
-  --workshop: #9333ea;
-  --keynote: #dc2626;
+  --talk: #3b6fd4;
+  --break: #8f8f87;
+  --meal: #d9822a;
+  --social: #2a9170;
+  --workshop: #9b59b6;
+  --keynote: #e74c3c;
   --on: #fff;
-  --focus: #2563eb;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -28,16 +27,15 @@
   :root:not([data-theme="light"]) {
     --bg: #161615;
     --fg: #f0efe8;
-    --mut: #a8a8a0;
+    --mut: #a3a29a;
     --line: #33332f;
     --card: #1f1f1d;
-    --talk: #3b82f6;
-    --break: #a1a1aa;
-    --meal: #f97316;
-    --social: #10b981;
-    --workshop: #a855f7;
-    --keynote: #ef4444;
-    --focus: #60a5fa;
+    --talk: #4f7fdc;
+    --break: #6f6f68;
+    --meal: #c0702a;
+    --social: #2a8a6b;
+    --workshop: #a569c4;
+    --keynote: #e95c4e;
     color-scheme: dark;
   }
 }
@@ -45,16 +43,15 @@
 :root[data-theme="dark"] {
   --bg: #161615;
   --fg: #f0efe8;
-  --mut: #a8a8a0;
+  --mut: #a3a29a;
   --line: #33332f;
   --card: #1f1f1d;
-  --talk: #3b82f6;
-  --break: #a1a1aa;
-  --meal: #f97316;
-  --social: #10b981;
-  --workshop: #a855f7;
-  --keynote: #ef4444;
-  --focus: #60a5fa;
+  --talk: #4f7fdc;
+  --break: #6f6f68;
+  --meal: #c0702a;
+  --social: #2a8a6b;
+  --workshop: #a569c4;
+  --keynote: #e95c4e;
   color-scheme: dark;
 }
 
@@ -66,42 +63,11 @@ html {
   box-sizing: border-box;
 }
 
-*:focus {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
-}
-
-*:focus:not(:focus-visible) {
-  outline: none;
-}
-
-*:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
-}
-
 body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
-  font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-}
-
-.skip-link {
-  position: absolute;
-  top: -100px;
-  left: 0;
-  background: var(--fg);
-  color: var(--bg);
-  padding: 12px 16px;
-  text-decoration: none;
-  font-weight: 600;
-  z-index: 100;
-}
-
-.skip-link:focus {
-  top: 10px;
-  left: 10px;
+  font: 15px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
 main {
@@ -119,7 +85,7 @@ h1 {
 .sub {
   color: var(--mut);
   margin: 0 0 16px;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .legend {
@@ -127,36 +93,17 @@ h1 {
   flex-wrap: wrap;
   gap: 12px;
   margin: 0 0 12px;
-  padding: 0;
-  list-style: none;
-}
-
-.legend li {
-  display: flex;
-  align-items: center;
-  color: var(--fg);
+  color: var(--mut);
   font-size: 13px;
 }
 
-.legend-color {
+.legend i {
   display: inline-block;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 3px;
   margin-right: 6px;
-  flex-shrink: 0;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
+  vertical-align: middle;
 }
 
 .head {
@@ -192,10 +139,6 @@ h1 {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.event-list {
-  display: none;
-}
-
 .sheet {
   position: fixed;
   left: 0;
@@ -212,12 +155,10 @@ h1 {
   transform: translateY(110%);
   transition: transform 0.3s ease;
   z-index: 10;
-  visibility: hidden;
 }
 
 .sheet.open {
   transform: none;
-  visibility: visible;
 }
 
 body.sheet-open main {
@@ -240,7 +181,7 @@ body.sheet-open main {
   color: var(--fg);
   font-size: 14px;
   margin-bottom: 12px;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .type {
@@ -269,26 +210,16 @@ body.sheet-open main {
   text-decoration: none;
   font-weight: 600;
   font-size: 14px;
-  transition: all 0.2s;
+  transition: opacity 0.2s;
 }
 
 .links a:hover {
-  opacity: 0.85;
-  transform: translateY(-1px);
-}
-
-.links a:active {
-  transform: translateY(0);
+  opacity: 0.8;
 }
 
 .links .none {
   color: var(--mut);
   font-size: 13px;
-}
-
-.external-icon {
-  font-size: 0.85em;
-  margin-left: 0.25em;
 }
 
 #x {
@@ -298,75 +229,36 @@ body.sheet-open main {
   width: 36px;
   height: 36px;
   border: 0;
-  background: var(--card);
+  background: none;
   color: var(--mut);
   font-size: 26px;
   line-height: 1;
   cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s;
 }
 
 #x:hover {
   color: var(--fg);
-  background: var(--line);
-}
-
-#x:focus {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
-}
-
-.backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 9;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease;
-}
-
-.backdrop.open {
-  opacity: 1;
-  visibility: visible;
 }
 </style>
 </head>
 <body>
-<a href="#main-content" class="skip-link">Skip to main content</a>
-
-<main id="main-content" role="main">
+<main>
   <h1>Tech Conference 2026</h1>
-  <p class="sub">Click or use keyboard navigation to select any event block for details</p>
-  
-  <h2 class="sr-only">Event Type Legend</h2>
-  <ul class="legend" id="legend" role="list" aria-label="Event type legend"></ul>
-  
-  <h2 class="sr-only">Schedule Days</h2>
-  <div class="head" id="head" role="list" aria-label="Conference days"></div>
-  
-  <div class="box" id="box" role="application" aria-label="Interactive event schedule" tabindex="0">
-    <canvas id="c" aria-label="Event schedule visualization. Use keyboard to navigate events."></canvas>
-    <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" id="sr-announce"></div>
-  </div>
-  
-  <!-- Accessible event list for screen readers -->
-  <div class="event-list sr-only" role="region" aria-label="Complete event list">
-    <h2>All Events</h2>
-    <div id="accessible-schedule"></div>
+  <p class="sub">Click any session block to view details and links</p>
+  <div class="legend" id="legend"></div>
+  <div class="head" id="head"></div>
+  <div class="box" id="box">
+    <canvas id="c"></canvas>
   </div>
 </main>
 
-<div class="backdrop" id="backdrop" aria-hidden="true"></div>
-
-<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="event-title" aria-describedby="event-description">
-  <button id="x" aria-label="Close event details dialog">×</button>
-  <span class="type" aria-hidden="true"></span>
-  <h2 id="event-title"></h2>
+<div class="sheet" id="sheet" role="dialog" aria-label="Event details">
+  <button id="x" aria-label="Close">×</button>
+  <span class="type"></span>
+  <h2></h2>
   <div class="meta"></div>
-  <div class="description" id="event-description"></div>
-  <div class="links" role="list"></div>
+  <div class="description"></div>
+  <div class="links"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -732,30 +624,17 @@ const labelPlugin = {
 
 let chart;
 let sel = null;
-let focusedElement = null;
 const isSel = (c) => sel && sel.k === c.datasetIndex && sel.i === c.dataIndex;
 const sheet = document.getElementById('sheet');
-const backdrop = document.getElementById('backdrop');
-const srAnnounce = document.getElementById('sr-announce');
-const closeButton = document.getElementById('x');
-
-function announce(message) {
-  srAnnounce.textContent = message;
-}
 
 function show() {
   const s = grid[sel.k][sel.i];
   
-  // Store currently focused element
-  focusedElement = document.activeElement;
-  
-  const eventTitle = sheet.querySelector('#event-title');
-  eventTitle.textContent = s[0];
-  
+  sheet.querySelector('h2').textContent = s[0];
   sheet.querySelector('.meta').textContent =
     `${fmt(s[1])} – ${fmt(s[2])}` + (s[4] ? ` · ${s[4]}` : '');
   
-  const desc = sheet.querySelector('#event-description');
+  const desc = sheet.querySelector('.description');
   desc.textContent = s[5] || '';
   desc.style.display = s[5] ? 'block' : 'none';
   
@@ -768,16 +647,10 @@ function show() {
   
   (s[6] || []).forEach(([label, url]) => {
     const a = document.createElement('a');
-    a.textContent = label;
-    const icon = document.createElement('span');
-    icon.className = 'external-icon';
-    icon.setAttribute('aria-label', '(opens in new tab)');
-    icon.textContent = ' ↗';
-    a.appendChild(icon);
+    a.textContent = label + ' ↗';
     a.href = url;
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
-    a.setAttribute('role', 'listitem');
     L.appendChild(a);
   });
   
@@ -788,67 +661,20 @@ function show() {
     L.appendChild(p);
   }
   
-  backdrop.classList.add('open');
   sheet.classList.add('open');
   document.body.classList.add('sheet-open');
-  backdrop.setAttribute('aria-hidden', 'false');
-  
-  // Announce to screen readers
-  announce(`Event details opened: ${s[0]}`);
-  
-  // Focus close button
-  setTimeout(() => closeButton.focus(), 100);
 }
 
 function hide() {
   sel = null;
   sheet.classList.remove('open');
-  backdrop.classList.remove('open');
   document.body.classList.remove('sheet-open');
-  backdrop.setAttribute('aria-hidden', 'true');
-  
-  announce('Event details closed');
-  
-  // Restore focus
-  if (focusedElement) {
-    setTimeout(() => focusedElement.focus(), 100);
-    focusedElement = null;
-  }
-  
-  chart.update('none');
 }
 
-// Close button handler
-closeButton.onclick = hide;
-
-// Backdrop click to close
-backdrop.onclick = hide;
-
-// Escape key handler
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && sheet.classList.contains('open')) {
-    hide();
-  }
-});
-
-// Focus trap in dialog
-sheet.addEventListener('keydown', (e) => {
-  if (e.key === 'Tab') {
-    const focusableElements = sheet.querySelectorAll(
-      'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-    
-    if (e.shiftKey && document.activeElement === firstElement) {
-      e.preventDefault();
-      lastElement.focus();
-    } else if (!e.shiftKey && document.activeElement === lastElement) {
-      e.preventDefault();
-      firstElement.focus();
-    }
-  }
-});
+document.getElementById('x').onclick = () => {
+  hide();
+  chart.update('none');
+};
 
 function build() {
   document.getElementById('box').style.height = (MAX - MIN) * HOUR + 8 + 'px';
@@ -930,107 +756,13 @@ function build() {
   });
 }
 
-// Keyboard navigation for chart
-let currentSelection = { k: 0, i: 0 };
-
-function findNextEvent(k, i, direction) {
-  let newK = k;
-  let newI = i;
-  
-  if (direction === 'right') {
-    newI = (newI + 1) % DAYS.length;
-  } else if (direction === 'left') {
-    newI = (newI - 1 + DAYS.length) % DAYS.length;
-  } else if (direction === 'down') {
-    newK = (newK + 1) % SLOTS;
-  } else if (direction === 'up') {
-    newK = (newK - 1 + SLOTS) % SLOTS;
-  }
-  
-  // Skip empty slots
-  let attempts = 0;
-  const maxAttempts = SLOTS * DAYS.length;
-  while (!grid[newK][newI] && attempts < maxAttempts) {
-    if (direction === 'right' || direction === 'left') {
-      newI = direction === 'right' ? (newI + 1) % DAYS.length : (newI - 1 + DAYS.length) % DAYS.length;
-    } else {
-      newK = direction === 'down' ? (newK + 1) % SLOTS : (newK - 1 + SLOTS) % SLOTS;
-    }
-    attempts++;
-  }
-  
-  if (grid[newK][newI]) {
-    return { k: newK, i: newI };
-  }
-  return { k, i };
-}
-
-document.getElementById('box').addEventListener('keydown', (e) => {
-  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', ' '].includes(e.key)) {
-    e.preventDefault();
-    
-    if (e.key === 'Enter' || e.key === ' ') {
-      sel = currentSelection;
-      show();
-      return;
-    }
-    
-    const directionMap = {
-      'ArrowUp': 'up',
-      'ArrowDown': 'down',
-      'ArrowLeft': 'left',
-      'ArrowRight': 'right'
-    };
-    
-    const direction = directionMap[e.key];
-    if (direction) {
-      const newSelection = findNextEvent(currentSelection.k, currentSelection.i, direction);
-      if (newSelection.k !== currentSelection.k || newSelection.i !== currentSelection.i) {
-        currentSelection = newSelection;
-        sel = currentSelection;
-        const event = grid[currentSelection.k][currentSelection.i];
-        announce(`Selected: ${event[0]}, ${TYPES[event[3]]}, ${fmt(event[1])} to ${fmt(event[2])}`);
-        chart.update('none');
-      }
-    }
-  }
-});
-
-// Initialize legend
 document.getElementById('legend').innerHTML = Object.entries(TYPES)
-  .map(([k, v]) => `<li><span class="legend-color" style="background:var(--${k})" aria-hidden="true"></span>${v}</li>`)
+  .map(([k, v]) => `<span><i style="background:var(--${k})"></i>${v}</span>`)
   .join('');
 
-// Initialize day headers
 document.getElementById('head').innerHTML = DAYS.map(
-  (d) => `<div role="listitem"><span>${d.name}</span><small>${d.sub}</small></div>`
+  (d) => `<div>${d.name}<small>${d.sub}</small></div>`
 ).join('');
-
-// Create accessible schedule for screen readers
-const accessibleSchedule = document.getElementById('accessible-schedule');
-DAYS.forEach((day, dayIndex) => {
-  const daySection = document.createElement('section');
-  daySection.setAttribute('aria-label', `${day.name}, ${day.sub}`);
-  
-  const dayHeading = document.createElement('h3');
-  dayHeading.textContent = `${day.name} - ${day.sub}`;
-  daySection.appendChild(dayHeading);
-  
-  const eventList = document.createElement('ul');
-  day.items.forEach((item) => {
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <strong>${item[0]}</strong> - ${TYPES[item[3]]}<br>
-      Time: ${fmt(item[1])} – ${fmt(item[2])}<br>
-      ${item[4] ? `Location: ${item[4]}<br>` : ''}
-      ${item[5] ? `Description: ${item[5]}<br>` : ''}
-    `;
-    eventList.appendChild(li);
-  });
-  
-  daySection.appendChild(eventList);
-  accessibleSchedule.appendChild(daySection);
-});
 
 build();
 
