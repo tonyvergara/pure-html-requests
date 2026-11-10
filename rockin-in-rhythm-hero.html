@@ -186,6 +186,8 @@
       min-height: calc(100vh - var(--nav-h));
       background: var(--paper);
       overflow: hidden;
+      border: 8px solid var(--ink);
+      border-radius: 4px;
     }
 
     .hero-wave {
@@ -193,10 +195,13 @@
       inset: 0;
       z-index: 0;
       pointer-events: none;
+      display: flex;
+      justify-content: center;
     }
 
     .hero-wave svg {
       width: 100%;
+      max-width: 1440px;
       height: 100%;
       display: block;
     }
