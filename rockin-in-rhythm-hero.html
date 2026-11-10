@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rockin in Rhythm — Baltimore, MD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=League+Gothic&family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --ink: #1d1d1d;
+      --ink-soft: #2a2a2a;
+      --paper: #d8d8d8;
+      --paper-light: #ececec;
+      --white: #ffffff;
+      --yellow: #ffef96;
+      --blue: #adcdff;
+      --blue-bright: #acecff;
+      --nav-logo: #d9d9d9;
+
+      --font-display: "League Spartan", "Arial Black", Impact, sans-serif;
+      --font-ui: "League Gothic", Helvetica, sans-serif;
+
+      --nav-h: 72px;
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-ui);
+      background: var(--white);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    *:focus-visible {
+      outline: 3px solid var(--blue-bright);
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 16px;
+      z-index: 1000;
+      background: var(--ink);
+      color: var(--white);
+      padding: 10px 16px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .skip-link:focus {
+      top: 16px;
+    }
+
+    /* ========== NAV ========== */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--nav-h);
+      background: var(--white);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .nav {
+      height: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .logo {
+      flex: 0 0 auto;
+      width: 48px;
+      height: 48px;
+      background: var(--nav-logo);
+      border: none;
+      display: block;
+      text-indent: -9999px;
+      overflow: hidden;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex: 1;
+      gap: clamp(18px, 2.4vw, 36px);
+      margin-left: auto;
+    }
+
+    .nav-links a {
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .nav-links a:hover {
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .nav-cta {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--ink);
+      color: var(--white);
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 0.8125rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 14px 22px;
+      border: none;
+      transition: transform 0.25s var(--ease-out), background 0.2s ease;
+    }
+
+    .nav-cta:hover {
+      background: #000;
+      transform: translateY(-1px);
+    }
+
+    .menu-toggle {
+      display: none;
+      margin-left: auto;
+      width: 48px;
+      height: 48px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      position: relative;
+      z-index: 120;
+    }
+
+    .menu-toggle span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      margin: 6px auto;
+      background: var(--ink);
+      transition: transform 0.3s var(--ease-out), opacity 0.2s ease;
+      transform-origin: center;
+    }
+
+    .menu-toggle[aria-expanded="true"] span:nth-child(1) {
+      transform: translateY(8px) rotate(45deg);
+    }
+
+    .menu-toggle[aria-expanded="true"] span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .menu-toggle[aria-expanded="true"] span:nth-child(3) {
+      transform: translateY(-8px) rotate(-45deg);
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      position: relative;
+      isolation: isolate;
+      min-height: calc(100vh - var(--nav-h));
+      background: var(--paper);
+      overflow: hidden;
+      border: 8px solid var(--ink);
+      border-radius: 4px;
+    }
+
+    .hero-wave {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      display: flex;
+      justify-content: center;
+    }
+
+    .hero-wave svg {
+      width: 100%;
+      max-width: 1440px;
+      height: 100%;
+      display: block;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 1440px;
+      margin: 0 auto;
+      min-height: calc(100vh - var(--nav-h));
+      padding: clamp(28px, 4vw, 56px) clamp(20px, 4vw, 56px) clamp(36px, 5vw, 64px);
+      display: grid;
+      grid-template-columns: minmax(280px, 0.95fr) minmax(320px, 1.15fr);
+      gap: clamp(24px, 4vw, 64px);
+      align-items: stretch;
+    }
+
+    .hero-media {
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      min-height: 520px;
+      animation: rise-in 0.9s var(--ease-out) both;
+    }
+
+    .hero-media img {
+      width: min(100%, 520px);
+      height: auto;
+      max-height: min(72vh, 680px);
+      object-fit: cover;
+      object-position: center top;
+      filter: grayscale(1) contrast(1.05);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+      user-select: none;
+    }
+
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: clamp(28px, 4vw, 48px);
+      padding-top: clamp(8px, 1.5vw, 24px);
+      text-align: right;
+    }
+
+    .title-block {
+      animation: rise-in 0.8s var(--ease-out) 0.08s both;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-weight: 400;
+      line-height: 0.86;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      font-size: clamp(3.5rem, 170px, 200px);
+    }
+
+    .hero-title .line {
+      display: block;
+    }
+
+    .hero-title .rockin {
+      color: var(--yellow);
+    }
+
+    .hero-title .in-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: baseline;
+      gap: 0.28em;
+    }
+
+    .hero-title .in {
+      color: var(--white);
+      font-size: 96px;
+      letter-spacing: 0.04em;
+      transform: translateY(-0.15em);
+    }
+
+    .hero-title .rhythm {
+      color: var(--blue-bright);
+      margin-top: 0.02em;
+    }
+
+    .event-meta {
+      animation: rise-in 0.8s var(--ease-out) 0.18s both;
+    }
+
+    .event-meta .city {
+      font-family: var(--font-ui);
+      font-weight: 900;
+      font-size: clamp(1.35rem, 2.4vw, 2rem);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--ink);
+      color: white;
+    }
+
+    .event-meta .tagline {
+      margin-top: 4px;
+      font-family: var(--font-ui);
+      font-style: italic;
+      font-weight: 600;
+      font-size: clamp(0.85rem, 1.2vw, 1.05rem);
+      color: var(--ink);
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+    }
+
+    .event-meta .dates {
+      margin-top: 10px;
+      font-family: var(--font-ui);
+      font-weight: 900;
+      font-size: clamp(1.35rem, 2.6vw, 2.1rem);
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      animation: rise-in 0.9s var(--ease-out) 0.28s both;
+    }
+
+    .feature-card {
+      background: var(--ink-soft);
+      color: var(--white);
+      border-radius: 10px;
+      padding: clamp(18px, 2vw, 26px) clamp(16px, 1.8vw, 24px);
+      min-height: 118px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: right;
+      transition: transform 0.35s var(--ease-out), background 0.25s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-3px);
+      background: #222;
+    }
+
+    .feature-card .label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 6px;
+    }
+
+    .feature-card .value {
+      font-family: var(--font-ui);
+      font-weight: 800;
+      font-size: clamp(1rem, 1.5vw, 1.35rem);
+      line-height: 1.15;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+    }
+
+    .feature-card .value.yellow { color: var(--yellow); }
+    .feature-card .value.blue { color: var(--blue-bright); }
+    .feature-card.solo .value {
+      font-size: clamp(1.05rem, 1.55vw, 1.4rem);
+    }
+
+    @keyframes rise-in {
+      from {
+        opacity: 0;
+        transform: translateY(22px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ========== MOBILE ========== */
+    @media (max-width: 900px) {
+      :root {
+        --nav-h: 64px;
+      }
+
+      .nav {
+        padding: 0 16px;
+        gap: 12px;
+      }
+
+      .nav-links,
+      .nav-cta {
+        display: none;
+      }
+
+      .menu-toggle {
+        display: inline-block;
+      }
+
+      .nav.is-open .nav-links {
+        display: flex;
+        position: fixed;
+        inset: var(--nav-h) 0 0 0;
+        z-index: 110;
+        background: var(--white);
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+        gap: 0;
+        padding: 12px 0 32px;
+        overflow-y: auto;
+        animation: menu-in 0.35s var(--ease-out) both;
+      }
+
+      .nav.is-open .nav-links a {
+        padding: 18px 24px;
+        font-size: 1.05rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      }
+
+      .nav.is-open .nav-cta {
+        display: inline-flex;
+        position: fixed;
+        left: 24px;
+        right: 24px;
+        bottom: 28px;
+        z-index: 115;
+        padding: 18px 22px;
+        animation: menu-in 0.4s var(--ease-out) 0.05s both;
+      }
+
+      @keyframes menu-in {
+        from {
+          opacity: 0;
+          transform: translateY(-8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      body.menu-open {
+        overflow: hidden;
+      }
+
+      .hero-inner {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        padding: 36px 20px 48px;
+      }
+
+      .hero-media {
+        display: none;
+      }
+
+      .hero-copy {
+        text-align: left;
+        gap: 36px;
+      }
+
+      .hero-title .in-row {
+        justify-content: flex-start;
+      }
+
+      .hero-title {
+        font-size: clamp(3.25rem, 16vw, 4.75rem);
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .feature-card {
+        text-align: left;
+        min-height: 96px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <a class="logo" href="#" aria-label="Rockin in Rhythm home">Logo</a>
+
+      <button
+        class="menu-toggle"
+        id="menu-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="primary-menu"
+        aria-label="Open menu"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links" id="primary-menu">
+        <li><a href="#about">Lorem</a></li>
+        <li><a href="#classes">Lorem</a></li>
+        <li><a href="#music">Lorem</a></li>
+        <li><a href="#social">Lorem</a></li>
+        <li><a href="#schedule">Lorem</a></li>
+        <li><a href="#tickets">Lorem</a></li>
+      </ul>
+
+      <a class="nav-cta" href="#tickets">Lorem</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero-wave" aria-hidden="true">
+        <svg viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            fill="#1d1d1d"
+            d="M0 0 H1440 V430
+               C1280 510, 1120 560, 960 545
+               C760 525, 620 430, 420 360
+               C260 305, 120 290, 0 320
+               Z"
+          />
+        </svg>
+      </div>
+
+      <div class="hero-inner">
+        <div class="hero-media">
+          <img
+            src="assets/rockin-dancers.png"
+            alt="Black-and-white photograph of dancers at a mid-century social, mid-swing"
+            width="470"
+            height="560"
+            decoding="async"
+          />
+        </div>
+
+        <div class="hero-copy">
+          <div class="title-block">
+            <h1 class="hero-title" id="hero-heading">
+              <span class="line in-row">
+                <span class="rockin">Rockin</span>
+                <span class="in">In</span>
+              </span>
+              <span class="line rhythm">Rhythm</span>
+            </h1>
+          </div>
+
+          <div class="event-meta">
+            <p class="city">Baltimore, MD</p>
+            <p class="tagline">The Greatest City in America</p>
+            <p class="dates">June 27 — June 29</p>
+          </div>
+
+          <div class="feature-grid" role="list">
+            <article class="feature-card" role="listitem">
+              <p class="label">Classes with</p>
+              <p class="value yellow">Firstname &amp; Firstname</p>
+            </article>
+            <article class="feature-card solo" role="listitem">
+              <p class="value blue">Social &amp; Community Gatherings</p>
+            </article>
+            <article class="feature-card" role="listitem">
+              <p class="label">Live music by</p>
+              <p class="value blue">Bandleader &amp; The Sidepeople</p>
+            </article>
+            <article class="feature-card solo" role="listitem">
+              <p class="value yellow">A Night Out on the Town</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var nav = document.getElementById("site-nav");
+      var toggle = document.getElementById("menu-toggle");
+      var links = document.querySelectorAll("#primary-menu a, .nav-cta");
+
+      function setOpen(open) {
+        nav.classList.toggle("is-open", open);
+        document.body.classList.toggle("menu-open", open);
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+        toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      }
+
+      toggle.addEventListener("click", function () {
+        setOpen(!nav.classList.contains("is-open"));
+      });
+
+      links.forEach(function (link) {
+        link.addEventListener("click", function () {
+          setOpen(false);
+        });
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") setOpen(false);
+      });
+
+      window.addEventListener("resize", function () {
+        if (window.matchMedia("(min-width: 901px)").matches) setOpen(false);
+      });
+    })();
+  </script>
+</body>
+</html>
