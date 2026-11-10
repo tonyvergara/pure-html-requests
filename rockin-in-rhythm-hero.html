@@ -6,7 +6,9 @@
   <title>Rockin in Rhythm — Baltimore, MD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Montserrat:ital,wght@0,500;0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=League+Gothic&family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
   <style>
     *,
     *::before,
@@ -27,8 +29,8 @@
       --blue-bright: #acecff;
       --nav-logo: #d9d9d9;
 
-      --font-display: "Archivo Black", "Arial Black", Impact, sans-serif;
-      --font-ui: "Montserrat", Helvetica, sans-serif;
+      --font-display: "League Spartan", "Arial Black", Impact, sans-serif;
+      --font-ui: "League Gothic", Helvetica, sans-serif;
 
       --nav-h: 72px;
       --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -251,7 +253,7 @@
       line-height: 0.86;
       letter-spacing: -0.02em;
       text-transform: uppercase;
-      font-size: clamp(3.5rem, 9.2vw, 7.5rem);
+      font-size: clamp(3.5rem, 170px, 200px);
     }
 
     .hero-title .line {
@@ -271,14 +273,13 @@
 
     .hero-title .in {
       color: var(--white);
-      font-size: 0.42em;
+      font-size: 96px;
       letter-spacing: 0.04em;
       transform: translateY(-0.15em);
     }
 
     .hero-title .rhythm {
       color: var(--blue-bright);
-      font-size: 1.08em;
       margin-top: 0.02em;
     }
 
@@ -293,6 +294,7 @@
       letter-spacing: 0.02em;
       text-transform: uppercase;
       color: var(--ink);
+      color: white;
     }
 
     .event-meta .tagline {
